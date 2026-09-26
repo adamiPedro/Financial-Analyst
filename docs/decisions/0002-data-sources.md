@@ -72,7 +72,6 @@ considering later as a convenience adapter for quotes.
 interesting for interpreting anomalies, but it is a third source before the first
 two work.
 
-**Keeping a commercial provider as a second adapter** — deferred to post-v1. The
-provider abstraction still gets built, but it will have one implementation for a
-while, which is a documented compromise with the "no abstraction with a single
-implementation" rule rather than an oversight.
+**A commercial provider as a second source** — not used in v1. No provider
+abstraction is built in advance: if a second source is ever added, the interface
+gets extracted then, shaped by two real implementations rather than a guess.
