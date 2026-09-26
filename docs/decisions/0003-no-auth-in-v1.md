@@ -11,7 +11,7 @@ roughly 8–10 hours of a 160-hour budget.
 Nothing in the Definition of Done requires it. The system has no user-specific
 data in v1: no watchlists, no saved research sessions, no per-user
 configuration. Authentication would be protecting a single user's access to
-public SEC filings.
+public CVM filings.
 
 The competing use for those hours is an AI evaluation harness — a suite that
 scores the agent's answers for grounding and correct tool use against known-
@@ -59,7 +59,7 @@ This is additive. No existing table or service signature changes.
   This ADR is the preparation for that conversation, not a substitute for it.
 - If the project is ever deployed publicly, the ingestion trigger endpoint
   must be disabled or protected — an unauthenticated endpoint that makes
-  outbound API calls is an abuse vector.
+  large outbound downloads is an abuse vector.
 
 ## Alternatives considered
 

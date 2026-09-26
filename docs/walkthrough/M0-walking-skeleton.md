@@ -3,9 +3,6 @@
 **Status:** in progress. Domain model and persistence done; fixture and endpoint
 still to come.
 
-Rewritten 25 Sep after the data source changed from SEC to CVM. The earlier
-version of this file described a `Cik` value object that no longer exists.
-
 ## What got built (so far)
 
 - `Cnpj` — value object for the Brazilian corporate tax registration
@@ -28,11 +25,9 @@ Every row carries `CNPJ_CIA`, `CD_CVM`, `DT_REFER`, `VERSAO`, `ESCALA_MOEDA`,
 Four things about that shape matter more than anything else in this milestone.
 
 **`CD_CONTA` is a standardized account code.** Revenue is `3.01` for every
-company. Gross result `3.03`, EBIT `3.05`, net income `3.11`. This is the single
-biggest difference from SEC XBRL, where revenue is scattered across `Revenues`,
-`RevenueFromContractWithCustomerExcludingAssessedTax` and `SalesRevenueNet`,
-varying by company *and* filing year. CVM mandates the chart of accounts, so the
-mapping problem that would have dominated M1 mostly doesn't exist.
+company. Gross result `3.03`, EBIT `3.05`, net income `3.11`. CVM mandates the
+chart of accounts, so turning each company's rows into a common set of metrics is
+mostly a lookup table rather than per-company detective work.
 
 The exception, and it's a real one: banks and insurers use a different structure.
 `3.01` does not mean for Itaú what it means for Vale. Since the seed universe
@@ -52,9 +47,8 @@ in units or thousands. Storing a figure without applying its scale is wrong by
 suite that only checks the pipeline ran.
 
 **`VERSAO` gives restatements for free.** When a company resubmits a filing, the
-new document carries a higher version. Compare with SEC, where you infer
-supersession from accession numbers and filing dates. Here the source format says
-it directly, which is why "a revised value never silently overwrites the
+new document carries a higher version. Supersession doesn't have to be inferred
+from filing dates; the source format says it directly, which is why "a revised value never silently overwrites the
 original" is a cheap promise to keep rather than an expensive one.
 
 ## Why CNPJ is a type and not a string
@@ -86,10 +80,10 @@ and it is stable per registrant. So ingestion can write a fact without first
 resolving an identifier to an internal id — no lookup, no cache, no resolution
 step in the hottest path.
 
-An earlier draft chose a surrogate key over the SEC's CIK, on the argument that
-binding identity to one regulator's numbering would be expensive to undo. That
-argument was sound and is now spent: with no second jurisdiction in prospect, the
-surrogate bought optionality nobody would exercise.
+The standard case for a surrogate key is that binding identity to one
+regulator's numbering is expensive to undo. That's true, but with no second
+source of companies in prospect, a surrogate buys optionality nobody would
+exercise.
 
 The cost is stated honestly in the ADR: if a Brazilian-only scope ever changes,
 every foreign key changes with it.
@@ -143,10 +137,9 @@ has to be nullable — a company legitimately exists in this system before its
 ticker is known. That surprised me, and it's a good example of the data source
 shaping the model rather than the reverse.
 
-**CVM does publish a sector**, unlike the SEC. The company registry (CAD)
-carries a sector-of-activity classification, so `Company.Sector` holds real data
-rather than a field waiting for a commercial provider to fill it. The SEC version
-of this model had no sector field for exactly that reason.
+**CVM does publish a sector.** The company registry (CAD) carries a
+sector-of-activity classification, so `Company.Sector` comes from the same source
+as everything else rather than needing a second data provider.
 
 ## Interview answers
 

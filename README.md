@@ -89,8 +89,8 @@ docs/decisions/                         ADRs
 | [B3](https://www.b3.com.br/en_us/market-data-and-indices/data-services/market-data/historical-data/equities/historical-quotes/) | COTAHIST | Daily historical quotes |
 
 All four are yearly bulk files, publicly downloadable, no authentication. CVM
-refreshes weekly to pick up resubmissions. See ADR 0002 for why these rather than
-SEC EDGAR and a commercial provider.
+refreshes weekly to pick up resubmissions. See ADR 0002 for why these rather than a
+commercial data provider.
 
 Recorded fixtures are committed so the test suite and a fresh clone run with no
 network at all.

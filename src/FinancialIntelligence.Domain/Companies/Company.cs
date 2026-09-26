@@ -68,9 +68,8 @@ public sealed class Company
     public string? Ticker { get; private set; }
 
     /// <summary>
-    /// Sector of activity from the CVM company registry (CAD). Unlike the SEC,
-    /// CVM does publish a sector classification, so this is real data rather than
-    /// a field waiting for a commercial provider to fill it.
+    /// Sector of activity from the CVM company registry (CAD). Nullable because
+    /// CAD leaves it blank for some registrants.
     /// </summary>
     public string? Sector { get; private set; }
 

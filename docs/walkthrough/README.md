@@ -13,8 +13,8 @@ narrative is a stronger portfolio artifact than the same system without one.
 
 | Milestone | File | Status |
 | --- | --- | --- |
-| M0 | `M0-walking-skeleton.md` | not written |
-| M1 | `M1-sec-ingestion.md` | not written |
+| M0 | `M0-walking-skeleton.md` | in progress |
+| M1 | `M1-cvm-ingestion.md` | not written |
 | M2 | `M2-analytics.md` | not written |
 | M3 | `M3-anomaly-engine.md` | not written |
 | M4 | `M4-market-data.md` | not written |

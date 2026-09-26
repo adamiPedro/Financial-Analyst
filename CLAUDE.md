@@ -13,8 +13,8 @@ trading system, not investment advice, and not a CRUD dashboard.
 
 **Who it is for:** Brazilian financial institutions. The project exists to show
 that I can ship a complex, coherent product *and* that I understand the finance
-side of the domain they operate in — which is why it uses CVM filings rather
-than SEC ones. Fundamentals depth is demonstrated separately through coursework.
+side of the domain they operate in — which is why it uses CVM filings.
+Fundamentals depth is demonstrated separately through coursework.
 
 That division is deliberate, but it does not mean I can hand-wave this codebase.
 Interviewers will ask about this project, because it is the impressive one. If I
@@ -243,7 +243,7 @@ Never `fix`, `update stuff`, `wip`. `main` always builds and passes tests.
 out through one endpoint. Ugly and hardcoded on purpose — no provider
 abstraction, no normalization pipeline, no interfaces yet.
 
-**Decided 25 Sep:** data source switched from SEC to CVM + B3 (ADR 0002).
+**Decided 25 Sep:** data source is CVM + B3, Brazilian companies only (ADR 0002).
 `Company` keyed on CD_CVM (ADR 0007). Consolidated basis with individual
 fallback, resolved to one basis per company and metric and never spliced
 (ADR 0008). Seed universe includes banks.

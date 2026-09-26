@@ -20,9 +20,7 @@ status changed and a pointer to the one replacing it — the history is the poin
 | [0007](0007-company-identity.md) | CD_CVM as Company's primary key | **Draft** | 2026-09-25 |
 | [0008](0008-consolidated-vs-individual.md) | Consolidated basis, individual as fallback | **Draft** | 2026-09-25 |
 
-Three drafts await Pedro's pass. 0002 and 0007 supersede earlier drafts written
-when the project targeted SEC data; the superseded text is in git history rather
-than kept as separate files, since neither was ever committed as accepted.
+Three drafts await Pedro's pass.
 
 ## Expected, not yet decided
 

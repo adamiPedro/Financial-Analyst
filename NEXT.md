@@ -44,8 +44,8 @@ Overwrite this at the end of every session. Commit it.
    closes M0
 7. Implement 0007's two guards in code: the key test, and CAD validation at
    ingest
-8. Rewrite `docs/walkthrough/M0-walking-skeleton.md` — still describes `Cik`, and
-   its basis section predates the single-basis rule — before tagging
+8. Fix `docs/walkthrough/M0-walking-skeleton.md` — its basis section predates
+   the single-basis rule — and finish it before tagging
    `v0.1-skeleton`
 9. PR `m0-cvm-rewrite` into `main` once build and tests are green
 

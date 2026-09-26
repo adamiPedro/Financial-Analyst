@@ -2,7 +2,6 @@
 
 **Status:** Proposed — DRAFT, needs Pedro's edit before commit
 **Date:** 2026-09-25
-**Supersedes:** the 2026-09-22 draft of this ADR, which assumed SEC data
 
 ## Context
 
@@ -14,14 +13,14 @@
   on every row.
 - A database-generated surrogate `int`.
 
-An earlier draft of this ADR chose a surrogate key over the SEC's CIK. The
-argument was optionality: a non-US market would have no CIK, so binding identity
-to one jurisdiction's identifier would be expensive to undo.
+The usual argument for a surrogate key is optionality: binding identity to one
+regulator's numbering is expensive to undo if a second data source with its own
+identifiers ever arrives.
 
-That argument is now spent. The project covers CVM-registered Brazilian
-companies only, deliberately and for the whole of v1. With no second jurisdiction
-in prospect, a surrogate key buys optionality nobody will exercise and charges a
-CIK-to-Id resolution step on every fact written.
+That argument does not apply here. The project covers CVM-registered Brazilian
+companies only, by design. With no second source of companies in prospect, a
+surrogate key buys optionality nobody will exercise and charges a
+CD_CVM-to-Id resolution step on every fact written.
 
 ## Decision
 
@@ -60,8 +59,8 @@ Two guards turn the risks listed below from accepted into enforced:
 - Narrow: a 4-byte integer in every foreign key on the largest tables.
 
 **Bad**
-- Identity is bound to CVM's numbering. Adding a non-Brazilian market means
-  every foreign key changes, not one nullable column. That is the cost of the
+- Identity is bound to CVM's numbering. Adding companies from outside CVM would
+  mean every foreign key changes, not one nullable column. That is the cost of the
   decision and it is accepted knowingly.
 - A CD_CVM misparsed on first ingest cannot be corrected in one row; it means
   updating every fact that references it. The CAD validation above is what stops a
@@ -74,11 +73,10 @@ Two guards turn the risks listed below from accepted into enforced:
 ## Alternatives considered
 
 **Surrogate int with CD_CVM unique** — rejected. It is the right answer the
-moment a second jurisdiction appears, and the migration path is: add a surrogate,
-repoint foreign keys, keep CD_CVM as the natural key. No second jurisdiction is
-planned — v1 covers the Brazilian market only and SEC data is not on the roadmap —
-so deciding against a change that has been ruled out would mean paying for it
-twice.
+moment a second source of companies appears, and the migration path is: add a
+surrogate, repoint foreign keys, keep CD_CVM as the natural key. The project is
+Brazil-only by design, so paying for that now would be paying for a change that
+has been ruled out.
 
 **CNPJ as the key** — rejected for the reasons above: it identifies a legal
 entity, not a registrant, and it is less stable than CD_CVM.
