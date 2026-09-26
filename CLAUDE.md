@@ -53,7 +53,7 @@ this?"* Specifically:
 
 - A non-obvious decision and its reason
 - A domain subtlety that isn't visible in the code (why Q4 is derived, why a
-  tag priority list exists at all, why this value is nullable)
+  `CD_CONTA` priority list exists at all, why this value is nullable)
 - An invariant or constraint the type system can't express
 - A trade-off deliberately accepted, and what it costs
 - A footgun the next reader would otherwise step on
@@ -72,7 +72,7 @@ build log instead.
 
 ### 2. Build log — the teaching
 
-One file per milestone in `docs/walkthrough/`, e.g. `M1-sec-ingestion.md`,
+One file per milestone in `docs/walkthrough/`, e.g. `M1-cvm-ingestion.md`,
 written as the milestone completes. Structure:
 
 1. **What got built** — the components and how they fit together
@@ -177,7 +177,8 @@ dotnet ef database update \
   --startup-project src/FinancialIntelligence.Api
 
 # Secrets (never appsettings.json)
-dotnet user-secrets set "Providers:TwelveData:ApiKey" "<key>" \
+# The data path needs none. This is the dev-time cloud model only (ADR 0006).
+dotnet user-secrets set "AI:Cloud:ApiKey" "<key>" \
   --project src/FinancialIntelligence.Api
 ```
 
@@ -191,12 +192,12 @@ Infrastructure/Application seam. Constructor injection only.
 
 **Tests.** Financial math is unit-tested against values calculated by hand from
 real filings, with the source noted in the test name or a comment. Ingestion is
-tested against committed SEC fixtures, never the live API. Integration tests
-use a real Postgres in Docker, not an in-memory provider — in-memory doesn't
-enforce the constraints that make idempotency work.
+tested against committed CVM and B3 fixtures, never a live download.
+Integration tests use a real Postgres in Docker, not an in-memory provider —
+in-memory doesn't enforce the constraints that make idempotency work.
 
 **Git.** Short-lived feature branches, PR into `main` even working alone.
-Conventional commits: `feat(ingestion): add SEC company facts importer`.
+Conventional commits: `feat(ingestion): add CVM DFP importer`.
 Never `fix`, `update stuff`, `wip`. `main` always builds and passes tests.
 
 ---
@@ -226,8 +227,10 @@ Never `fix`, `update stuff`, `wip`. `main` always builds and passes tests.
   unavailable.
 - Output is never framed as investment advice. Call them anomalies or signals,
   never fraud or indicators. Never `fraude` or `manipulação`.
-- No secrets in git, ever. CVM and B3 need no credentials, so nothing in this
-  project should ever require one.
+- No secrets in git, ever. CVM and B3 need no credentials, so the whole data
+  path — download, ingestion, normalization, analytics, anomalies — runs without
+  one, and so does the test suite. The only secret in the project is the
+  development-time cloud AI key (ADR 0006); the Ollama demo path needs nothing.
 
 ---
 
@@ -242,9 +245,12 @@ abstraction, no normalization pipeline, no interfaces yet.
 
 **Decided 25 Sep:** data source switched from SEC to CVM + B3 (ADR 0002).
 `Company` keyed on CD_CVM (ADR 0007). Consolidated basis with individual
-fallback (ADR 0008). Seed universe includes banks.
+fallback, resolved to one basis per company and metric and never spliced
+(ADR 0008). Seed universe includes banks.
 
-**Open:** ADRs 0002, 0007 and 0008 are drafts awaiting my pass.
+**Open:** ADRs 0002, 0007 and 0008 are drafts awaiting my pass. The session-3
+working tree is committed on `m0-cvm-rewrite`; `main` still holds only the initial
+commit, because `dotnet build` and `dotnet test` have not run since the rewrite.
 
 See `NEXT.md` for where I left off, `docs/decisions/` for decisions made, and
 `docs/walkthrough/` for how each milestone actually works.

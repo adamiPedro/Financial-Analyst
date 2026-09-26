@@ -35,13 +35,14 @@ coverage/
 TestResults/
 
 # NOTE: test fixtures ARE committed on purpose.
-# tests/**/Fixtures/*.json holds recorded SEC companyfacts responses so the
-# suite runs offline and a stranger can clone and test with no API key.
-# Do not add a rule that excludes them.
+# tests/**/Fixtures/ holds trimmed CVM DFP/ITR/CAD extracts and B3 COTAHIST
+# records so the suite runs offline and a stranger can clone and test with no
+# network access at all. Do not add a rule that excludes them.
 
 # --- Secrets ---------------------------------------------------------------
-# Provider API keys live in dotnet user-secrets or environment variables,
-# never in the repo. See README "Configuration".
+# The data path needs no credentials at all — CVM and B3 are public files. The
+# only secret is the development-time cloud AI key (ADR 0006), and it lives in
+# dotnet user-secrets or an environment variable. See README "Configuration".
 .env
 .env.*
 !.env.example
@@ -58,9 +59,9 @@ secrets.json
 # named volume.
 data/postgres/
 
-# Raw provider dumps kept while debugging parsers. These can be large and are
-# reproducible from the live API, so they stay local. Curated fixtures that
-# tests depend on go under tests/**/Fixtures/ and ARE committed.
+# Raw CVM and B3 downloads kept while debugging parsers. The yearly archives are
+# large and re-downloadable from the published files, so they stay local. Curated
+# fixtures that tests depend on go under tests/**/Fixtures/ and ARE committed.
 data/raw/
 *.dump
 *.sql.gz
