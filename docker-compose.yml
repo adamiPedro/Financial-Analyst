@@ -1,0 +1,24 @@
+# Postgres only. The API and Worker run from `dotnet run` during development.
+# Containerising them arrives at M7 (ADR 0005).
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: findb
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-findb}
+      POSTGRES_USER: ${POSTGRES_USER:-findb}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-findb}
+    ports:
+      - "5432:5432"
+    volumes:
+      # Named volume, not a bind mount: survives `docker compose down`,
+      # removed by `docker compose down -v`, and never lands in the repo.
+      - findb-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-findb} -d ${POSTGRES_DB:-findb}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  findb-data:

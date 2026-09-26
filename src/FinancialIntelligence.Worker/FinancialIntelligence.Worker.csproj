@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <ItemGroup>
+    <ProjectReference Include="..\FinancialIntelligence.Application\FinancialIntelligence.Application.csproj" />
+    <ProjectReference Include="..\FinancialIntelligence.Infrastructure\FinancialIntelligence.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+  </ItemGroup>
+
+</Project>

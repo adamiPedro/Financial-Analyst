@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <ProjectReference Include="..\FinancialIntelligence.Application\FinancialIntelligence.Application.csproj" />
+    <!--
+      Api -> Infrastructure exists ONLY so Program.cs can register concrete
+      implementations (the composition root). No Infrastructure type may be
+      used anywhere else in this project. See the note in Program.cs.
+    -->
+    <ProjectReference Include="..\FinancialIntelligence.Infrastructure\FinancialIntelligence.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="Npgsql" />
+  </ItemGroup>
+
+</Project>

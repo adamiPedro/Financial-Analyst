@@ -1,0 +1,107 @@
+# ---------------------------------------------------------------------------
+# Financial Intelligence Platform — .gitignore
+#
+# Deliberately short. The official dotnet template is ~350 lines covering
+# Xamarin, TFS, ReSharper and other things this repo will never contain.
+# Everything here is something this project can actually produce.
+# ---------------------------------------------------------------------------
+
+# --- .NET build output -----------------------------------------------------
+bin/
+obj/
+artifacts/            # .NET 10 unified artifacts output path
+[Dd]ebug/
+[Rr]elease/
+*.dll
+*.exe
+*.pdb
+
+# --- .NET tooling ----------------------------------------------------------
+*.user                # per-developer project settings (*.csproj.user etc.)
+*.suo
+*.userprefs
+.dotnet/
+project.lock.json
+msbuild.log
+msbuild.err
+msbuild.wrn
+
+# --- Test output -----------------------------------------------------------
+[Tt]est[Rr]esult*/
+coverage/
+*.coverage
+*.coveragexml
+*.trx
+TestResults/
+
+# NOTE: test fixtures ARE committed on purpose.
+# tests/**/Fixtures/*.json holds recorded SEC companyfacts responses so the
+# suite runs offline and a stranger can clone and test with no API key.
+# Do not add a rule that excludes them.
+
+# --- Secrets ---------------------------------------------------------------
+# Provider API keys live in dotnet user-secrets or environment variables,
+# never in the repo. See README "Configuration".
+.env
+.env.*
+!.env.example
+appsettings.*.local.json
+appsettings.Secrets.json
+secrets.json
+*.pfx
+*.p12
+*.key
+*.pem
+
+# --- Local data ------------------------------------------------------------
+# Postgres bind-mount volume, if docker-compose.yml uses one instead of a
+# named volume.
+data/postgres/
+
+# Raw provider dumps kept while debugging parsers. These can be large and are
+# reproducible from the live API, so they stay local. Curated fixtures that
+# tests depend on go under tests/**/Fixtures/ and ARE committed.
+data/raw/
+*.dump
+*.sql.gz
+
+# Local SQLite scratch databases, if you ever use one to try something out
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# --- Local models ----------------------------------------------------------
+# Ollama stores models under ~/.ollama, but guard against anyone pulling a
+# GGUF into the repo. A single 8B model is ~5 GB and GitHub will reject it.
+models/
+*.gguf
+*.bin
+
+# --- Editors ---------------------------------------------------------------
+# Rider / IntelliJ
+.idea/
+*.sln.iml
+
+# Visual Studio
+.vs/
+
+# VS Code — ignore personal settings, but commit the shared run configuration
+# so a stranger cloning the repo can hit F5 and have it work.
+.vscode/*
+!.vscode/launch.json
+!.vscode/tasks.json
+!.vscode/extensions.json
+
+# --- macOS -----------------------------------------------------------------
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# --- Misc ------------------------------------------------------------------
+*.log
+*.tmp
+*.bak
+node_modules/         # only if the static frontend ever grows a build step

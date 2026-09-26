@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="coverlet.collector" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\FinancialIntelligence.Domain\FinancialIntelligence.Domain.csproj" />
+    <ProjectReference Include="..\..\src\FinancialIntelligence.Application\FinancialIntelligence.Application.csproj" />
+    <ProjectReference Include="..\..\src\FinancialIntelligence.Infrastructure\FinancialIntelligence.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

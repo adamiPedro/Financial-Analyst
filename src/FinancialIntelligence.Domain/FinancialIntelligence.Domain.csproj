@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Domain references nothing. No EF Core, no HttpClient, no AI SDKs,
+    no Microsoft.Extensions.*. If a PackageReference or ProjectReference
+    ever appears in this file, something has gone wrong.
+  -->
+
+</Project>
