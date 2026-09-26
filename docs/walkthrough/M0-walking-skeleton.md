@@ -155,10 +155,11 @@ company that matches no filings. Validation moves that failure from "mysterious
 empty result" to "throws at startup with the bad value in the message."
 
 **Why is the accounting basis on every fact rather than a global setting?**
-Because it isn't global. Consolidated is the default, but companies that file no
-consolidated statements fall back to individual, so the basis varies per company
-and per period. A fact without its basis is not interpretable, and a metric
-computed across mixed bases is wrong without being detectably wrong.
+Because it isn't global. Consolidated is the default, but a company with no
+consolidated statements falls back to individual, so the basis varies per company
+and metric. Storing it on every fact keeps that visible in the data, and because a
+served series is resolved to one basis for its whole length (ADR 0008), analytics
+never see a series that changes basis partway through.
 
 **How do you avoid double-counting from ORDEM_EXERC?** Filter to `ÚLTIMO` on
 ingest and treat the prior-period rows as what they are: a restated comparative
