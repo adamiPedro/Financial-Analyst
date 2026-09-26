@@ -4,11 +4,14 @@ namespace FinancialIntelligence.Worker;
 /// Placeholder. Scheduled ingestion arrives at M1; this exists so the Worker
 /// host builds and runs from M0 onward.
 /// </summary>
-internal sealed class IngestionScheduler(ILogger<IngestionScheduler> logger) : BackgroundService
+internal sealed partial class IngestionScheduler(ILogger<IngestionScheduler> logger) : BackgroundService
 {
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        logger.LogInformation("Ingestion scheduler started. No jobs registered yet (M0).");
+        LogStarted(logger);
         return Task.CompletedTask;
     }
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Ingestion scheduler started. No jobs registered yet (M0).")]
+    private static partial void LogStarted(ILogger logger);
 }

@@ -46,3 +46,9 @@ dotnet_naming_style.underscore_prefix.capitalization = camel_case
 
 # Async methods must be awaited somewhere
 dotnet_diagnostic.CS4014.severity = error
+
+[tests/**.cs]
+# Sentence-style test names (Name_is_required) are the xUnit convention and read
+# as the test description in the runner. CA1707 guards public library APIs, not
+# test methods.
+dotnet_diagnostic.CA1707.severity = none

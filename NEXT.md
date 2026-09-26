@@ -36,7 +36,7 @@ Overwrite this at the end of every session. Commit it.
 1. `dotnet build` and `dotnet test` — still the first run since the rewrite
 2. Edit ADRs 0002, 0007 and 0008 into my own words, then commit
 3. Confirm seed-universe CD_CVM codes and CNPJs against the real CAD file — the
-   values in `CompanyTests` are plausible but unverified
+   values in `CompanyTests` and `CnpjTests` are plausible but unverified
 4. Download `cad_cia_aberta.csv` and one `dfp_cia_aberta_YYYY.zip`, commit a
    trimmed fixture. While CAD is open: does any CNPJ appear under more than one
    CD_CVM (re-registration)? If so, drop `IsUnique()` on the CNPJ index. And does

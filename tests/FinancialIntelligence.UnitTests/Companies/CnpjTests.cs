@@ -10,7 +10,7 @@ public class CnpjTests
     [InlineData("33.000.167/0001-01", "33000167000101")]   // Petrobras
     [InlineData("33000167000101", "33000167000101")]       // already unpunctuated
     [InlineData("  33000167000101  ", "33000167000101")]
-    [InlineData("33.000.167/0001-01", "33000167000101")]
+    [InlineData("33.592.510/0001-54", "33592510000154")]   // Vale
     public void Parse_strips_punctuation_and_keeps_fourteen_digits(string input, string expected)
     {
         Assert.Equal(expected, Cnpj.Parse(input).Value);
