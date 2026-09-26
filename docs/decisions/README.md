@@ -35,7 +35,7 @@ probe.
 | 0011 | Restatement handling: which VERSAO is current and how supersession is recorded | M1 |
 | 0012 | ORDEM_EXERC policy: how the prior-period rows in every file are treated | M1 |
 | 0013 | Anomaly baseline: rolling window length and why | M3 |
-| 0014 | AI tool granularity: few broad tools vs many narrow ones | M7 |
+| 0014 | AI tool granularity: few broad tools vs many narrow ones | M6 |
 
 0010 and 0011 are the two best architecture questions in this project. Give them
 real time.
