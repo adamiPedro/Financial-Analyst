@@ -38,7 +38,9 @@ Overwrite this at the end of every session. Commit it.
 3. Confirm seed-universe CD_CVM codes and CNPJs against the real CAD file — the
    values in `CompanyTests` are plausible but unverified
 4. Download `cad_cia_aberta.csv` and one `dfp_cia_aberta_YYYY.zip`, commit a
-   trimmed fixture
+   trimmed fixture. While CAD is open: does any CNPJ appear under more than one
+   CD_CVM (re-registration)? If so, drop `IsUnique()` on the CNPJ index. And does
+   CAD include cancelled companies? If so, 0007 needs no allow-list.
 5. First migration: `dotnet ef migrations add AddCompany ...`
 6. Hardcoded endpoint reading revenue (CD_CONTA 3.01) out of the fixture —
    closes M0
