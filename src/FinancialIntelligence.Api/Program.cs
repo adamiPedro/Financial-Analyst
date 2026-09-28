@@ -9,7 +9,8 @@ var builder = WebApplication.CreateBuilder(args);
 //
 // This is the ONLY place in the Api project allowed to know about Infrastructure.
 // It asks for infrastructure by intent; it does not know infrastructure is EF
-// Core, which is why this project has no EF packages of its own.
+// Core. The only EF package here is the design-time one `dotnet ef` needs in
+// the startup project, and no code in Api touches it.
 // ---------------------------------------------------------------------------
 
 var connectionString = builder.Configuration.GetConnectionString("Postgres")

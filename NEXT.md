@@ -33,7 +33,8 @@ Overwrite this at the end of every session. Commit it.
   them.
 
 **NEXT:**
-1. `dotnet build` and `dotnet test` — still the first run since the rewrite
+1. ~~`dotnet build` and `dotnet test`~~ — green 28 Sep (23 passed, 2 placeholder
+   skips) after fixing two NU1903 package vulnerabilities and three analyzer rules
 2. Edit ADRs 0002, 0007 and 0008 into my own words, then commit
 3. Confirm seed-universe CD_CVM codes and CNPJs against the real CAD file — the
    values in `CompanyTests` and `CnpjTests` are plausible but unverified
@@ -41,7 +42,8 @@ Overwrite this at the end of every session. Commit it.
    trimmed fixture. While CAD is open: does any CNPJ appear under more than one
    CD_CVM (re-registration)? If so, drop `IsUnique()` on the CNPJ index. And does
    CAD include cancelled companies? If so, 0007 needs no allow-list.
-5. First migration: `dotnet ef migrations add AddCompany ...`
+5. ~~First migration~~ — `AddCompany` applied 28 Sep; `\d companies` confirms
+   `cvm_code` has no identity default. Names are snake_case (EFCore.NamingConventions)
 6. Hardcoded endpoint reading revenue (CD_CONTA 3.01) out of the fixture —
    closes M0
 7. Implement 0007's two guards in code: the key test, and CAD validation at

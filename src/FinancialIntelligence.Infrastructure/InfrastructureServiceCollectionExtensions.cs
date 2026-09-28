@@ -16,8 +16,11 @@ public static class InfrastructureServiceCollectionExtensions
         this IServiceCollection services,
         string connectionString)
     {
+        // snake_case names so hand-written SQL, psql and COPY work without
+        // quoting: Postgres folds unquoted identifiers to lower case, and EF's
+        // default PascalCase names would otherwise need "Quotes" everywhere.
         services.AddDbContext<FinancialIntelligenceDbContext>(options =>
-            options.UseNpgsql(connectionString));
+            options.UseNpgsql(connectionString).UseSnakeCaseNamingConvention());
 
         return services;
     }
