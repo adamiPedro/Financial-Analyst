@@ -14,6 +14,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\FinancialIntelligence.Domain\FinancialIntelligence.Domain.csproj" />
     <ProjectReference Include="..\..\src\FinancialIntelligence.Application\FinancialIntelligence.Application.csproj" />
+    <ProjectReference Include="..\..\src\FinancialIntelligence.Infrastructure\FinancialIntelligence.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
