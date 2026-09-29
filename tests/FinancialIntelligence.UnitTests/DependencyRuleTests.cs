@@ -3,7 +3,7 @@ using System.Reflection;
 namespace FinancialIntelligence.UnitTests;
 
 /// <summary>
-/// The dependency rule in CLAUDE.md is only worth stating if something enforces it.
+/// The project's dependency rule is only worth stating if something enforces it.
 /// This is that something: Domain must reference nothing but the BCL.
 /// </summary>
 public class DependencyRuleTests

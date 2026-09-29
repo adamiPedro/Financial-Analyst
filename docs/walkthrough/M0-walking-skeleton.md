@@ -38,8 +38,8 @@ remaining piece of M1.
 current period *and* the prior-period comparative, marked `ÚLTIMO` and
 `PENÚLTIMO`. A naive parse ingests both and every period appears twice with
 slightly different values, because the comparative was restated. This is the trap
-most likely to produce silently wrong numbers, so it's a non-negotiable in
-`CLAUDE.md` rather than a code comment.
+most likely to produce silently wrong numbers, so it's a project-wide
+non-negotiable rather than a single code comment.
 
 **`ESCALA_MOEDA` is the units problem, stated explicitly.** Values are published
 in units or thousands. Storing a figure without applying its scale is wrong by

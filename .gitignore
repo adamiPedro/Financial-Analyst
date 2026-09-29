@@ -95,6 +95,13 @@ models/
 !.vscode/tasks.json
 !.vscode/extensions.json
 
+# --- Personal working notes ------------------------------------------------
+# AI-assistant instructions and my own session to-do list. Neither is needed to
+# build, test or understand the project; docs/ carries the durable reasoning.
+CLAUDE.md
+NEXT.md
+.claude/
+
 # --- macOS -----------------------------------------------------------------
 .DS_Store
 .AppleDouble

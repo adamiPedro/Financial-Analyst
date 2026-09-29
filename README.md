@@ -17,8 +17,8 @@ judgement about any company.
 ## Status
 
 M0 — walking skeleton. Solution scaffolding and a health endpoint. No ingestion
-yet. See `NEXT.md` for the current session and `docs/decisions/` for decisions
-made so far.
+yet. See `docs/walkthrough/` for how each milestone works and `docs/decisions/`
+for decisions made so far.
 
 ## Running it
 
