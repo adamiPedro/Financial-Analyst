@@ -53,10 +53,10 @@ public class CompanyTests
     [Fact]
     public void Rename_keeps_the_same_registration()
     {
-        var company = new Company(20494, Cnpj.Parse("47.960.950/0001-21"), "Magazine Luiza S.A.");
+        var company = new Company(22470, Cnpj.Parse("47.960.950/0001-21"), "Magazine Luiza S.A.");
         company.Rename("Magalu S.A.");
 
         Assert.Equal("Magalu S.A.", company.Name);
-        Assert.Equal(20494, company.CvmCode);
+        Assert.Equal(22470, company.CvmCode);
     }
 }
