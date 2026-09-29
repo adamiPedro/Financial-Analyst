@@ -1,0 +1,4 @@
+# CVM and B3 fixtures are byte-for-byte copies of the published files: Latin-1,
+# CRLF. Parsers are tested against exactly those bytes, so git must never
+# normalise line endings or treat them as text on any clone.
+tests/**/Fixtures/** -text
