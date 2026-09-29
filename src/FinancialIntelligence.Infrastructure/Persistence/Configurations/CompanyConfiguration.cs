@@ -25,11 +25,11 @@ internal sealed class CompanyConfiguration : IEntityTypeConfiguration<Company>
             .HasMaxLength(14)
             .IsRequired();
 
-        // CNPJ is not the key but must still be unique: two CD_CVM rows sharing a
-        // CNPJ would mean the registry was misparsed, and it is better to fail the
-        // insert than to quietly double-count a company.
+        // Deliberately not unique. CVM issues a new CD_CVM when a company
+        // re-registers, and the old code stays in CAD as CANCELADA - so one CNPJ
+        // legitimately maps to several companies here (34 CNPJs in the Sep 2026
+        // CAD, e.g. Equatorial Goias as 2445 and 25577). Indexed for lookup only.
         builder.HasIndex(c => c.Cnpj)
-            .IsUnique()
             .HasDatabaseName("ix_companies_cnpj");
 
         builder.Property(c => c.Name)
