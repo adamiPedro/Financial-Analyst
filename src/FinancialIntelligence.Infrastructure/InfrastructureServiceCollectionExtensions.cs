@@ -1,3 +1,5 @@
+using FinancialIntelligence.Application.FinancialData;
+using FinancialIntelligence.Infrastructure.FinancialData;
 using FinancialIntelligence.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,6 +23,9 @@ public static class InfrastructureServiceCollectionExtensions
         // default PascalCase names would otherwise need "Quotes" everywhere.
         services.AddDbContext<FinancialIntelligenceDbContext>(options =>
             options.UseNpgsql(connectionString).UseSnakeCaseNamingConvention());
+
+        services.AddScoped<IRevenueQuery, RevenueQuery>();
+        services.AddScoped<RevenueImporter>();
 
         return services;
     }

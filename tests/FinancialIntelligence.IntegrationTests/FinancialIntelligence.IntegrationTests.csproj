@@ -12,6 +12,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="..\Fixtures\**" LinkBase="Fixtures" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\src\FinancialIntelligence.Domain\FinancialIntelligence.Domain.csproj" />
     <ProjectReference Include="..\..\src\FinancialIntelligence.Application\FinancialIntelligence.Application.csproj" />
     <ProjectReference Include="..\..\src\FinancialIntelligence.Infrastructure\FinancialIntelligence.Infrastructure.csproj" />

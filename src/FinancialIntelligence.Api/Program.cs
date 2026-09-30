@@ -1,3 +1,4 @@
+using FinancialIntelligence.Api.Companies;
 using FinancialIntelligence.Api.Health;
 using FinancialIntelligence.Infrastructure;
 using Npgsql;
@@ -42,6 +43,7 @@ app.UseDefaultFiles();
 app.UseStaticFiles();
 
 app.MapHealthChecks("/health");
+app.MapRevenueEndpoints();
 
 app.Run();
 

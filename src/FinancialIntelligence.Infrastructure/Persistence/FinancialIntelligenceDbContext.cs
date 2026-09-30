@@ -1,4 +1,5 @@
 using FinancialIntelligence.Domain.Companies;
+using FinancialIntelligence.Domain.FinancialData;
 using Microsoft.EntityFrameworkCore;
 
 namespace FinancialIntelligence.Infrastructure.Persistence;
@@ -8,6 +9,8 @@ public sealed class FinancialIntelligenceDbContext(
     : DbContext(options)
 {
     public DbSet<Company> Companies => Set<Company>();
+
+    public DbSet<FinancialFact> FinancialFacts => Set<FinancialFact>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
