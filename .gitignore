@@ -100,6 +100,8 @@ models/
 # build, test or understand the project; docs/ carries the durable reasoning.
 CLAUDE.md
 NEXT.md
+# Build walkthroughs are my own study notes, kept locally.
+docs/walkthrough/
 .claude/
 
 # --- macOS -----------------------------------------------------------------

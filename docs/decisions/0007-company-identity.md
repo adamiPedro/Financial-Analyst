@@ -25,11 +25,18 @@ CD_CVM-to-Id resolution step on every fact written.
 ## Decision
 
 `Company.CvmCode` is the primary key: an `int`, assigned by CVM, never generated
-by this system. `Cnpj` is carried as data with its own unique index.
+by this system. `Cnpj` is carried as data with its own index, which is
+deliberately *not* unique.
 
 CNPJ is explicitly *not* the identity. It describes a legal entity rather than a
 registrant — it can change under corporate restructuring, and subsidiaries have
 their own — so two CNPJs can describe what the market treats as one company.
+
+The reverse also happens: one CNPJ under two CD_CVM codes. When a company
+re-registers, CVM issues a new code and keeps the old one as cancelled. The CAD
+file checked on 29 Sep 2026 has 34 such CNPJs (Equatorial Goiás, for example, is
+both 2445 and 25577). A unique CNPJ index would reject real data, so it was
+dropped in the `MakeCnpjIndexNonUnique` migration.
 
 The EF configuration must call `ValueGeneratedNever()`. Left to convention, EF
 treats an integer key as an identity column, Postgres generates a value, and the
@@ -40,10 +47,10 @@ Two guards turn the risks listed below from accepted into enforced:
 - A unit test asserts that the `Company` key is not value-generated. That failure
   mode is silent, so it needs a test rather than a comment.
 - Ingestion validates every CD_CVM against the CAD registration file before it
-  writes facts, and rejects an unknown code instead of inserting it. Caveat to
-  settle at M1: CAD describes *currently* registered companies, so a company that
-  has since deregistered may be missing from it while its historical filings are
-  not. The rule may need to be "present in CAD, or explicitly allow-listed".
+  writes facts, and rejects an unknown code instead of inserting it. An earlier
+  worry was that CAD might list only current registrations, leaving the history
+  of deregistered companies unimportable. The real file settles it: cancelled
+  companies are included (`SIT = CANCELADA`), so no allow-list is needed.
 
 ## Consequences
 

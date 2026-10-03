@@ -16,9 +16,9 @@ judgement about any company.
 
 ## Status
 
-M0 — walking skeleton. Solution scaffolding and a health endpoint. No ingestion
-yet. See `docs/walkthrough/` for how each milestone works and `docs/decisions/`
-for decisions made so far.
+M0 — walking skeleton. One company's revenue goes from a real CVM filing into
+Postgres and out through `GET /api/companies/{cvmCode}/revenue`. See
+`docs/decisions/` for decisions made so far.
 
 ## Running it
 
