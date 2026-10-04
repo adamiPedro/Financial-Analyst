@@ -1,4 +1,5 @@
 using FinancialIntelligence.Application.FinancialData;
+using FinancialIntelligence.Infrastructure.Companies;
 using FinancialIntelligence.Infrastructure.FinancialData;
 using FinancialIntelligence.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -26,6 +27,7 @@ public static class InfrastructureServiceCollectionExtensions
 
         services.AddScoped<IRevenueQuery, RevenueQuery>();
         services.AddScoped<RevenueImporter>();
+        services.AddScoped<CompanyImporter>();
 
         return services;
     }

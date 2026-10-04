@@ -86,6 +86,17 @@ public sealed class Company
         Name = name.Trim();
     }
 
+    /// <summary>
+    /// CVM gives a re-registered company a new code, so a CNPJ changing under an
+    /// existing code is unexpected. CAD is still the registry's source of truth;
+    /// the importer applies the change and logs it rather than refusing it.
+    /// </summary>
+    public void ChangeCnpj(Cnpj cnpj)
+    {
+        ArgumentNullException.ThrowIfNull(cnpj);
+        Cnpj = cnpj;
+    }
+
     public void UpdateRegistry(string? sector, string? registrationStatus)
     {
         Sector = Blank(sector);

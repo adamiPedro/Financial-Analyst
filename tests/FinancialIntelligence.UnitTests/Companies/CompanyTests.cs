@@ -59,4 +59,14 @@ public class CompanyTests
         Assert.Equal("Magalu S.A.", company.Name);
         Assert.Equal(22470, company.CvmCode);
     }
+
+    [Fact]
+    public void Change_cnpj_replaces_the_registration_number()
+    {
+        var company = new Company(9512, Cnpj.Parse("33.000.167/0001-01"), "Petrobras");
+
+        company.ChangeCnpj(Cnpj.Parse("33.592.510/0001-54"));
+
+        Assert.Equal(Cnpj.Parse("33.592.510/0001-54"), company.Cnpj);
+    }
 }
