@@ -101,6 +101,8 @@ public class CadReaderTests
 
         var error = await Assert.ThrowsAsync<InvalidDataException>(() => ReadText(csv));
         Assert.Contains("9512", error.Message, StringComparison.Ordinal);
+        Assert.Contains("ATIVO", error.Message, StringComparison.Ordinal);
+        Assert.Contains("CANCELADA", error.Message, StringComparison.Ordinal);
     }
 
     [Theory]

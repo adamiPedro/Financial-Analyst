@@ -58,7 +58,8 @@ public static class CadReader
                 if (first != company)
                 {
                     throw new InvalidDataException(
-                        $"Line {lineNumber}: CVM code {company.CvmCode} appears again with different details.");
+                        $"Line {lineNumber}: CVM code {company.CvmCode} appears again with different details. " +
+                        $"First: {Describe(first)}. This line: {Describe(company)}.");
                 }
 
                 continue;
@@ -92,6 +93,9 @@ public static class CadReader
 
         return new CadCompany(cvmCode, cnpj, name.Trim(), Blank(fields[columns.Sector]), Blank(fields[columns.Status]));
     }
+
+    private static string Describe(CadCompany company) =>
+        $"{company.Cnpj.Formatted}, {company.Name}, {company.Sector ?? "(no sector)"}, {company.Status ?? "(no status)"}";
 
     private static string? Blank(string value) =>
         string.IsNullOrWhiteSpace(value) ? null : value.Trim();
