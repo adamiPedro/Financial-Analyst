@@ -115,6 +115,20 @@ public sealed class CompanyImportTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task A_row_the_database_rejects_saves_nothing_from_the_file()
+    {
+        // The reader accepts a 41-character status; the column holds 40, so
+        // Postgres rejects Vale after Petrobras is already queued.
+        var csv = new MemoryStream(Encoding.Latin1.GetBytes(
+            "CNPJ_CIA;DENOM_SOCIAL;SIT;CD_CVM;SETOR_ATIV;TP_MERC\r\n" +
+            "33.000.167/0001-01;PETRÓLEO BRASILEIRO S.A. - PETROBRAS;ATIVO;9512;Petróleo e Gás;BOLSA\r\n" +
+            $"33.592.510/0001-54;VALE S.A.;{new string('X', 41)};4170;Extração Mineral;BOLSA\r\n"));
+
+        await Assert.ThrowsAsync<DbUpdateException>(() => ImportAsync(csv));
+        Assert.Equal(0, await CountAsync());
+    }
+
+    [Fact]
     public async Task A_company_missing_from_the_file_is_kept()
     {
         await AddAsync(new Company(99999, ValeCnpj, "EMPRESA FORA DO CADASTRO"));
