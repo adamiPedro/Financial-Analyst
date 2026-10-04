@@ -27,7 +27,7 @@ public static class CadReader
             ?? throw new InvalidDataException("Company file is empty.");
         var columns = Columns.From(header);
 
-        var companies = new Dictionary<int, (CadCompany Company, string[] Fields)>();
+        var companies = new Dictionary<int, CadCompany>();
         var lineNumber = 1;
         while (await reader.ReadLineAsync(cancellationToken) is { } line)
         {
@@ -49,11 +49,13 @@ public static class CadReader
             var company = Parse(fields, columns, lineNumber);
 
             // A company trading on more than one market gets one row per market
-            // (TP_MERC), identical otherwise. Anything else differing means CVM
-            // published two versions of one company, and picking one is a guess.
+            // (TP_MERC). Only the fields we store are compared: a difference in
+            // one of those means CVM published two versions of the company, and
+            // picking one is a guess. A difference in a phone number or address
+            // we never keep shouldn't stop the whole import.
             if (companies.TryGetValue(company.CvmCode, out var first))
             {
-                if (!SameApartFrom(first.Fields, fields, columns.Market))
+                if (first != company)
                 {
                     throw new InvalidDataException(
                         $"Line {lineNumber}: CVM code {company.CvmCode} appears again with different details.");
@@ -62,10 +64,10 @@ public static class CadReader
                 continue;
             }
 
-            companies.Add(company.CvmCode, (company, fields));
+            companies.Add(company.CvmCode, company);
         }
 
-        return companies.Values.Select(entry => entry.Company).ToList();
+        return companies.Values.ToList();
     }
 
     private static CadCompany Parse(string[] fields, Columns columns, int lineNumber)
@@ -91,23 +93,10 @@ public static class CadReader
         return new CadCompany(cvmCode, cnpj, name.Trim(), Blank(fields[columns.Sector]), Blank(fields[columns.Status]));
     }
 
-    private static bool SameApartFrom(string[] first, string[] second, int ignored)
-    {
-        for (var i = 0; i < first.Length; i++)
-        {
-            if (i != ignored && first[i] != second[i])
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
     private static string? Blank(string value) =>
         string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
-    private sealed record Columns(int Cnpj, int Name, int Status, int CvmCode, int Sector, int Market, int Count)
+    private sealed record Columns(int Cnpj, int Name, int Status, int CvmCode, int Sector, int Count)
     {
         public static Columns From(string header)
         {
@@ -123,7 +112,7 @@ public static class CadReader
 
             return new Columns(
                 Find("CNPJ_CIA"), Find("DENOM_SOCIAL"), Find("SIT"), Find("CD_CVM"),
-                Find("SETOR_ATIV"), Find("TP_MERC"), names.Length);
+                Find("SETOR_ATIV"), names.Length);
         }
     }
 }

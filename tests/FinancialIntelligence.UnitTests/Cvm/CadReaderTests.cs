@@ -83,6 +83,17 @@ public class CadReaderTests
     }
 
     [Fact]
+    public async Task Rows_that_differ_only_in_columns_not_stored_merge()
+    {
+        var companies = await ReadText(
+            Header.Replace("\r\n", ";TEL\r\n", StringComparison.Ordinal)
+            + PetrobrasRow.Replace("\r\n", ";32241510\r\n", StringComparison.Ordinal)
+            + PetrobrasRow.Replace("\r\n", ";39994000\r\n", StringComparison.Ordinal));
+
+        Assert.Equal(9512, Assert.Single(companies).CvmCode);
+    }
+
+    [Fact]
     public async Task Rows_for_one_code_that_disagree_stop_the_read()
     {
         var csv = Header + PetrobrasRow
