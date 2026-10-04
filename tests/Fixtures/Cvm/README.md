@@ -21,3 +21,24 @@ Why these rows:
 | Vivara, `ESCALA_MOEDA` = `UNIDADE` | The other scale. 2024 revenue is `2577113417`, already in reais. |
 | Petrobras 3.99.x (earnings per share) | Marked `MIL` like the rest of the statement but actually in R$ per share (9.57 for 2023). Applying the scale here is wrong. |
 | `CD_CVM` = `009512` | Zero-padded to six digits in the file, unlike CAD's `9512`. |
+
+## cad_cia_aberta.csv
+
+CVM's register of every company that has filed as an open company (CAD).
+
+- **Source:** `cad_cia_aberta.csv` from
+  https://dados.cvm.gov.br/dados/CIA_ABERTA/CAD/DADOS/, downloaded
+  2026-09-29, SHA-256 `e87cb2bef6b0d1e3fabdcf7c9301b0fe00da690f812696fc0f74f8053f3ca45e`
+- **Trimmed to:** the header and every row for 11 companies. 13 rows, each
+  byte-identical to a line in the published file.
+- **Encoding:** Latin-1, CRLF, `;`-separated, left exactly as published.
+
+Why these rows:
+
+| Rows | What they exercise |
+|---|---|
+| Petrobras (9512) ×2, Vale (4170) ×2 | One row per market (`TP_MERC`), otherwise identical. Must merge into one company each. Petrobras's name has `Ó`. |
+| Equatorial Goiás 2445 and 25577 | One CNPJ under two CVM codes after re-registration. 2445 is `CANCELADA`. |
+| Rossi Residencial (16306) | Status `SUSPENSO(A) - DECISÃO ADM`: the `Ã` breaks if the file is read as UTF-8. |
+| Banco Santander S.A. (868) | Cancelled, with a blank sector. |
+| Vivara, Itaú, Bradesco, Banco do Brasil, Santander Brasil | Seed companies. Banco do Brasil's CNPJ `00.000.000/0001-91` is real despite the zeros. |

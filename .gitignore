@@ -102,6 +102,8 @@ CLAUDE.md
 NEXT.md
 # Build walkthroughs are my own study notes, kept locally.
 docs/walkthrough/
+docs/superpowers/
+.superpowers/
 .claude/
 
 # --- macOS -----------------------------------------------------------------
