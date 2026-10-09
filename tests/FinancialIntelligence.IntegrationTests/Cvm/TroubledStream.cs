@@ -12,9 +12,10 @@ internal sealed class TroubledStream(byte[] head, Func<CancellationToken, Task<i
     public static TroubledStream Dropping(byte[] head) =>
         new(head, _ => Task.FromException<int>(new IOException("Connection reset by peer.")));
 
-    public static TroubledStream Stalling(byte[] head) =>
+    public static TroubledStream Stalling(byte[] head, Action? onStall = null) =>
         new(head, async cancellationToken =>
         {
+            onStall?.Invoke();
             await Task.Delay(Timeout.Infinite, cancellationToken);
             return 0;
         });

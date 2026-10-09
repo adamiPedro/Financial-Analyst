@@ -37,8 +37,10 @@ public static class InfrastructureServiceCollectionExtensions
             {
                 client.BaseAddress = provider.GetRequiredService<IOptions<CvmOptions>>().Value.BaseUrl;
 
-                // The resilience handler owns the time limits. HttpClient's own
-                // 100-second default would cut off a 30 MB file on a slow line first.
+                // The resilience handler owns the time limits. HttpClient.Timeout
+                // wraps the whole pipeline, retries included, so the 100-second
+                // default would cap every attempt and retry together, far below
+                // the handler's 5 min / 15 min limits, and fail with its own exception.
                 client.Timeout = Timeout.InfiniteTimeSpan;
             })
             .AddStandardResilienceHandler(resilience =>

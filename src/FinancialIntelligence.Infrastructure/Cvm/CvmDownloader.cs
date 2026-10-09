@@ -49,16 +49,18 @@ public sealed class CvmDownloader(
 
         // Only ask "changed since?" while we still hold the copy a 304 would
         // tell us to keep. Sent raw: it goes back exactly as CVM sent it.
+        var askedIfChanged = false;
         if (latest?.ETag is { } eTag && File.Exists(localPath))
         {
             request.Headers.TryAddWithoutValidation("If-None-Match", eTag);
+            askedIfChanged = true;
         }
 
         // Headers-read, so a 30 MB body streams to disk instead of being
         // buffered in memory first.
         using var response = await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
 
-        if (response.StatusCode == HttpStatusCode.NotModified && latest is not null)
+        if (response.StatusCode == HttpStatusCode.NotModified && askedIfChanged && latest is not null)
         {
             return new DownloadResult(DownloadOutcome.NotModified, localPath, latest.Sha256, latest.DownloadedAt);
         }

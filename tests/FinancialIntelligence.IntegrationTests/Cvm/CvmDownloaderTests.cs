@@ -230,13 +230,16 @@ public sealed class CvmDownloaderTests : IAsyncLifetime, IDisposable
     public async Task A_cancelled_download_keeps_the_old_copy()
     {
         await DownloadFirstCopyAsync();
+        // No timer: the stalled body cancels it, so the cancel lands mid-read.
+        using var cancel = new CancellationTokenSource();
         _cvm.Reply(() => new HttpResponseMessage(HttpStatusCode.OK)
         {
-            Content = new StreamContent(TroubledStream.Stalling(NewContents[..10])),
+            Content = new StreamContent(TroubledStream.Stalling(NewContents[..10], onStall: () => cancel.Cancel())),
         });
-        using var cancel = new CancellationTokenSource(TimeSpan.FromMilliseconds(100));
 
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => DownloadAsync(cancel.Token));
+        var error = await Assert.ThrowsAnyAsync<OperationCanceledException>(() => DownloadAsync(cancel.Token));
+
+        Assert.IsNotType<TimeoutException>(error);
 
         await AssertFirstCopyIsKeptAsync();
     }
@@ -264,6 +267,20 @@ public sealed class CvmDownloaderTests : IAsyncLifetime, IDisposable
         Assert.Contains(CadUrl, error.Message, StringComparison.Ordinal);
         Assert.Single(_cvm.Requests);
         Assert.Empty(await RecordsAsync());
+    }
+
+    [Fact]
+    public async Task A_not_modified_answer_to_a_plain_request_is_an_error()
+    {
+        await DownloadFirstCopyAsync();
+        File.Delete(LocalPath);
+        _cvm.Reply(() => FakeCvm.Status(HttpStatusCode.NotModified));
+
+        var error = await Assert.ThrowsAsync<HttpRequestException>(() => DownloadAsync());
+
+        Assert.Contains(CadUrl, error.Message, StringComparison.Ordinal);
+        Assert.Null(_cvm.Requests[1].IfNoneMatch);
+        Assert.Single(await RecordsAsync());
     }
 
     [Fact]

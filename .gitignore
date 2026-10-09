@@ -59,10 +59,11 @@ secrets.json
 # named volume.
 data/postgres/
 
-# Raw CVM and B3 downloads kept while debugging parsers. The yearly archives are
+# Raw CVM and B3 downloads kept while debugging parsers, at any depth
+# (an IDE may run the app from a project folder). The yearly archives are
 # large and re-downloadable from the published files, so they stay local. Curated
 # fixtures that tests depend on go under tests/**/Fixtures/ and ARE committed.
-data/raw/
+**/data/raw/
 *.dump
 *.sql.gz
 
