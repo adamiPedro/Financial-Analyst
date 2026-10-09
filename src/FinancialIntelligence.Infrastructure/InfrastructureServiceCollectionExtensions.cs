@@ -1,9 +1,11 @@
 using FinancialIntelligence.Application.FinancialData;
 using FinancialIntelligence.Infrastructure.Companies;
+using FinancialIntelligence.Infrastructure.Cvm;
 using FinancialIntelligence.Infrastructure.FinancialData;
 using FinancialIntelligence.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace FinancialIntelligence.Infrastructure;
 
@@ -28,6 +30,26 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddScoped<IRevenueQuery, RevenueQuery>();
         services.AddScoped<RevenueImporter>();
         services.AddScoped<CompanyImporter>();
+
+        services.AddOptions<CvmOptions>().BindConfiguration(CvmOptions.Section);
+
+        services.AddHttpClient<CvmDownloader>((provider, client) =>
+            {
+                client.BaseAddress = provider.GetRequiredService<IOptions<CvmOptions>>().Value.BaseUrl;
+
+                // The resilience handler owns the time limits. HttpClient's own
+                // 100-second default would cut off a 30 MB file on a slow line first.
+                client.Timeout = Timeout.InfiniteTimeSpan;
+            })
+            .AddStandardResilienceHandler(resilience =>
+            {
+                resilience.AttemptTimeout.Timeout = TimeSpan.FromMinutes(5);
+                resilience.TotalRequestTimeout.Timeout = TimeSpan.FromMinutes(15);
+
+                // The library refuses to start unless this is at least twice the
+                // attempt timeout - it has to see a few attempts to judge a failure rate.
+                resilience.CircuitBreaker.SamplingDuration = TimeSpan.FromMinutes(10);
+            });
 
         return services;
     }
