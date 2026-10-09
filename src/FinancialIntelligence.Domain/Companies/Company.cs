@@ -56,7 +56,7 @@ public sealed class Company
     /// </summary>
     public Cnpj Cnpj { get; private set; }
 
-    /// <summary>DENOM_CIA, the registered corporate name.</summary>
+    /// <summary>DENOM_SOCIAL in CAD, the registered corporate name.</summary>
     public string Name { get; private set; }
 
     /// <summary>
