@@ -10,40 +10,43 @@ public sealed class FinancialFact
     {
         AccountCode = null!;
         SourceFile = null!;
+        Filing = null!;
     }
 
-    public FinancialFact(
-        int cvmCode,
-        string accountCode,
-        AccountingBasis basis,
-        DateOnly periodStart,
-        DateOnly periodEnd,
-        int version,
-        decimal value,
-        string sourceFile,
-        DateTimeOffset retrievedAt)
+    /// <summary>
+    /// Company, basis, version and provenance are copied from the filing rather
+    /// than passed in, so a fact can never disagree with the filing it belongs to.
+    /// </summary>
+    public FinancialFact(Filing filing, string accountCode, DateOnly? periodStart, DateOnly periodEnd, decimal value)
     {
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(cvmCode);
+        ArgumentNullException.ThrowIfNull(filing);
         ArgumentException.ThrowIfNullOrWhiteSpace(accountCode);
-        ArgumentException.ThrowIfNullOrWhiteSpace(sourceFile);
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(version);
-        if (periodEnd < periodStart)
+        if (periodStart is { } start && periodEnd < start)
         {
             throw new ArgumentException("Period ends before it starts.", nameof(periodEnd));
         }
 
-        CvmCode = cvmCode;
+        Filing = filing;
+        CvmCode = filing.CvmCode;
+        Basis = filing.Basis;
+        Version = filing.Version;
+        SourceFile = filing.SourceFile;
+        RetrievedAt = filing.RetrievedAt;
         AccountCode = accountCode;
-        Basis = basis;
         PeriodStart = periodStart;
         PeriodEnd = periodEnd;
-        Version = version;
         Value = value;
-        SourceFile = sourceFile;
-        RetrievedAt = retrievedAt;
     }
 
     public long Id { get; private set; }
+
+    public long FilingId { get; private set; }
+
+    /// <summary>
+    /// Set when the fact is created. A fact read back from the database has it
+    /// only if the query asked for it; queries normally go by FilingId.
+    /// </summary>
+    public Filing Filing { get; private set; }
 
     public int CvmCode { get; private set; }
 
@@ -55,9 +58,10 @@ public sealed class FinancialFact
     /// <summary>
     /// Both ends are stored because the end alone is ambiguous: a quarterly
     /// filing reports the three months and the year-to-date ending on the
-    /// same day.
+    /// same day. Null for balance-sheet rows: a balance is a position on one
+    /// date, and CVM publishes no start for it.
     /// </summary>
-    public DateOnly PeriodStart { get; private set; }
+    public DateOnly? PeriodStart { get; private set; }
 
     public DateOnly PeriodEnd { get; private set; }
 

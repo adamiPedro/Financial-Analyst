@@ -68,6 +68,54 @@ namespace FinancialIntelligence.Infrastructure.Migrations
                     b.ToTable("companies", (string)null);
                 });
 
+            modelBuilder.Entity("FinancialIntelligence.Domain.FinancialData.Filing", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<int>("Basis")
+                        .HasColumnType("integer")
+                        .HasColumnName("basis");
+
+                    b.Property<int>("CvmCode")
+                        .HasColumnType("integer")
+                        .HasColumnName("cvm_code");
+
+                    b.Property<int>("Form")
+                        .HasColumnType("integer")
+                        .HasColumnName("form");
+
+                    b.Property<int>("Layout")
+                        .HasColumnType("integer")
+                        .HasColumnName("layout");
+
+                    b.Property<DateOnly>("ReferenceDate")
+                        .HasColumnType("date")
+                        .HasColumnName("reference_date");
+
+                    b.Property<DateTimeOffset>("RetrievedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("retrieved_at");
+
+                    b.Property<string>("SourceFile")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("source_file");
+
+                    b.Property<int>("Version")
+                        .HasColumnType("integer")
+                        .HasColumnName("version");
+
+                    b.HasKey("Id")
+                        .HasName("pk_filing");
+
+                    b.ToTable("filing", (string)null);
+                });
+
             modelBuilder.Entity("FinancialIntelligence.Domain.FinancialData.FinancialFact", b =>
                 {
                     b.Property<long>("Id")
@@ -93,11 +141,15 @@ namespace FinancialIntelligence.Infrastructure.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("cvm_code");
 
+                    b.Property<long>("FilingId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("filing_id");
+
                     b.Property<DateOnly>("PeriodEnd")
                         .HasColumnType("date")
                         .HasColumnName("period_end");
 
-                    b.Property<DateOnly>("PeriodStart")
+                    b.Property<DateOnly?>("PeriodStart")
                         .HasColumnType("date")
                         .HasColumnName("period_start");
 
@@ -121,6 +173,9 @@ namespace FinancialIntelligence.Infrastructure.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_financial_facts");
+
+                    b.HasIndex("FilingId")
+                        .HasDatabaseName("ix_financial_facts_filing_id");
 
                     b.HasIndex("CvmCode", "AccountCode", "Basis", "PeriodStart", "PeriodEnd", "Version")
                         .IsUnique()
@@ -186,6 +241,15 @@ namespace FinancialIntelligence.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_financial_facts_companies_cvm_code");
+
+                    b.HasOne("FinancialIntelligence.Domain.FinancialData.Filing", "Filing")
+                        .WithMany()
+                        .HasForeignKey("FilingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_financial_facts_filing_filing_id");
+
+                    b.Navigation("Filing");
                 });
 #pragma warning restore 612, 618
         }
