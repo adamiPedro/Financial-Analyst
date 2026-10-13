@@ -33,7 +33,7 @@ public sealed partial class StatementImporter(FinancialIntelligenceDbContext db,
 
         var sourceFile = Path.GetFileName(zipPath);
         var prefix = form == FilingForm.Dfp ? "dfp" : "itr";
-        var year = YearOf(sourceFile, prefix);
+        var year = YearOf(sourceFile, prefix, nameof(zipPath));
         var codes = cvmCodes.ToList();
 
         await EnsureRegisteredAsync(codes, cancellationToken);
@@ -86,12 +86,12 @@ public sealed partial class StatementImporter(FinancialIntelligenceDbContext db,
 
     // The entries inside are named by year, and CVM's ZIP name carries it. A name
     // for the other form means the wrong file was passed in.
-    private static int YearOf(string fileName, string prefix)
+    private static int YearOf(string fileName, string prefix, string paramName)
     {
         var match = Regex.Match(fileName, $"^{prefix}_cia_aberta_(\\d{{4}})\\.zip$", RegexOptions.CultureInvariant);
         return match.Success
             ? int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture)
-            : throw new ArgumentException($"'{fileName}' is not a CVM {prefix.ToUpperInvariant()} file name.", nameof(fileName));
+            : throw new ArgumentException($"'{fileName}' is not a CVM {prefix.ToUpperInvariant()} file name.", paramName);
     }
 
     private async Task EnsureRegisteredAsync(List<int> codes, CancellationToken cancellationToken)

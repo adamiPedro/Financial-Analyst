@@ -16,9 +16,13 @@ judgement about any company.
 
 ## Status
 
-M0 — walking skeleton. One company's revenue goes from a real CVM filing into
-Postgres and out through `GET /api/companies/{cvmCode}/revenue`. See
-`docs/decisions/` for decisions made so far.
+M1 — in progress. CVM's company list, the downloader and the statement importer
+are in. Annual (DFP) and quarterly (ITR) statements are stored account by
+account with their provenance, and each filing's layout (industrial, three bank
+layouts, insurer) is detected. Six annual metrics are served at
+`GET /api/companies/{cvmCode}/metrics/{metric}/annual`, where `metric` is one of
+`revenue`, `gross-profit`, `net-income`, `operating-cash-flow`, `total-assets`
+or `equity`. See `docs/decisions/` for decisions made so far.
 
 ## Running it
 

@@ -1,6 +1,7 @@
 using FinancialIntelligence.Application.FinancialData;
 using FinancialIntelligence.Domain.FinancialData;
 using FinancialIntelligence.Infrastructure.FinancialData;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace FinancialIntelligence.IntegrationTests.FinancialData;
@@ -215,10 +216,15 @@ public sealed class MetricQueryTests : IAsyncLifetime, IDisposable
     }
 
     [Fact]
-    public async Task A_missing_total_makes_a_checked_part_unavailable()
+    public async Task A_missing_net_income_total_makes_the_filing_unknown_and_the_point_unavailable()
     {
+        // The total of every CheckedPart is itself a layout signal, so through the
+        // importer a missing total always means an unknown layout.
         await Import2024Async(FixtureZip.OnRow(IncomeCon, PetrobrasRow, "3.11", _ => []));
 
+        await using var db = _database.CreateContext();
+        var filing = await db.Filings.SingleAsync(f => f.CvmCode == Petrobras && f.Basis == AccountingBasis.Consolidated);
+        Assert.Equal(StatementLayout.Unknown, filing.Layout);
         Assert.Equal(MetricPointStatus.Unavailable, (await SinglePointAsync(Petrobras, Metric.NetIncome)).Status);
     }
 

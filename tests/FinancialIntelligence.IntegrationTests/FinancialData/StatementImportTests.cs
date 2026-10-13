@@ -207,8 +207,22 @@ public sealed class StatementImportTests : IAsyncLifetime, IDisposable
     {
         await _database.AddFixtureCompaniesAsync();
 
-        await Assert.ThrowsAsync<ArgumentException>(() =>
+        var error = await Assert.ThrowsAsync<ArgumentException>(() =>
             ImportAsync(_zips.Create("itr_2024", "itr_cia_aberta_2024.zip"), FilingForm.Dfp));
+
+        Assert.Equal("zipPath", error.ParamName);
+    }
+
+    [Fact]
+    public async Task A_dfp_zip_under_another_name_is_refused_and_stores_nothing()
+    {
+        await _database.AddFixtureCompaniesAsync();
+
+        var error = await Assert.ThrowsAsync<ArgumentException>(() =>
+            ImportAsync(_zips.Create("dfp_2024", "statements.zip"), FilingForm.Dfp));
+
+        Assert.Equal("zipPath", error.ParamName);
+        Assert.Empty(await FilingsAsync());
     }
 
     [Fact]
@@ -221,7 +235,8 @@ public sealed class StatementImportTests : IAsyncLifetime, IDisposable
         var error = await Assert.ThrowsAsync<InvalidDataException>(() => ImportAsync(badScale));
 
         Assert.Contains("dfp_cia_aberta_BPP_ind_2024.csv", error.Message, StringComparison.Ordinal);
-        Assert.Contains("Line ", error.Message, StringComparison.Ordinal);
+        // Line 317 of the fixture: Petrobras individual 2.03, the ÚLTIMO row (header is line 1).
+        Assert.Contains("Line 317", error.Message, StringComparison.Ordinal);
         Assert.Empty(await FilingsAsync());
     }
 
