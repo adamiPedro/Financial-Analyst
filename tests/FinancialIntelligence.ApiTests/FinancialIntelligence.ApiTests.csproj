@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <Compile Include="..\FinancialIntelligence.IntegrationTests\TestDatabase.cs" Link="TestDatabase.cs" />
+    <Compile Include="..\FinancialIntelligence.IntegrationTests\FixtureZip.cs" Link="FixtureZip.cs" />
     <None Include="..\Fixtures\**" LinkBase="Fixtures" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
