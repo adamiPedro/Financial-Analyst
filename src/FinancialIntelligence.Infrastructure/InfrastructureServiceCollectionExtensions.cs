@@ -1,5 +1,6 @@
 using FinancialIntelligence.Infrastructure.Companies;
 using FinancialIntelligence.Infrastructure.Cvm;
+using FinancialIntelligence.Infrastructure.FinancialData;
 using FinancialIntelligence.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,6 +27,7 @@ public static class InfrastructureServiceCollectionExtensions
             options.UseNpgsql(connectionString).UseSnakeCaseNamingConvention());
 
         services.AddScoped<CompanyImporter>();
+        services.AddScoped<StatementImporter>();
 
         services.AddOptions<CvmOptions>().BindConfiguration(CvmOptions.Section);
 
