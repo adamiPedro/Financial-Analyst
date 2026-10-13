@@ -1,3 +1,4 @@
+using FinancialIntelligence.Application.FinancialData;
 using FinancialIntelligence.Infrastructure.Companies;
 using FinancialIntelligence.Infrastructure.Cvm;
 using FinancialIntelligence.Infrastructure.FinancialData;
@@ -28,6 +29,7 @@ public static class InfrastructureServiceCollectionExtensions
 
         services.AddScoped<CompanyImporter>();
         services.AddScoped<StatementImporter>();
+        services.AddScoped<IMetricQuery, MetricQuery>();
 
         services.AddOptions<CvmOptions>().BindConfiguration(CvmOptions.Section);
 
