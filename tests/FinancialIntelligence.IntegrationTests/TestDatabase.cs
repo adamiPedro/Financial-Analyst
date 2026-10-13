@@ -37,6 +37,18 @@ public sealed class TestDatabase : IAsyncLifetime
         await db.SaveChangesAsync();
     }
 
+    /// <summary>The four companies in the statement fixtures; CNPJs as the files give them.</summary>
+    public async Task AddFixtureCompaniesAsync()
+    {
+        await using var db = CreateContext();
+        db.Companies.AddRange(
+            new Company(9512, Cnpj.Parse("33.000.167/0001-01"), "PETRÓLEO BRASILEIRO S.A. - PETROBRAS"),
+            new Company(19348, Cnpj.Parse("60.872.504/0001-23"), "ITAU UNIBANCO HOLDING S.A."),
+            new Company(906, Cnpj.Parse("60.746.948/0001-12"), "BCO BRADESCO S.A."),
+            new Company(23159, Cnpj.Parse("17.344.597/0001-94"), "BB SEGURIDADE PARTICIPAÇÕES S.A."));
+        await db.SaveChangesAsync();
+    }
+
     public async Task InitializeAsync()
     {
         await ExecuteOnServerAsync($"CREATE DATABASE {_name}");

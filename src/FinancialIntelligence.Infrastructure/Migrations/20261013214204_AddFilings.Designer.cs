@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FinancialIntelligence.Infrastructure.Migrations
 {
     [DbContext(typeof(FinancialIntelligenceDbContext))]
-    [Migration("20261013213850_AddFilingToFinancialFact")]
-    partial class AddFilingToFinancialFact
+    [Migration("20261013214204_AddFilings")]
+    partial class AddFilings
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -80,20 +80,26 @@ namespace FinancialIntelligence.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-                    b.Property<int>("Basis")
-                        .HasColumnType("integer")
+                    b.Property<string>("Basis")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
                         .HasColumnName("basis");
 
                     b.Property<int>("CvmCode")
                         .HasColumnType("integer")
                         .HasColumnName("cvm_code");
 
-                    b.Property<int>("Form")
-                        .HasColumnType("integer")
+                    b.Property<string>("Form")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
                         .HasColumnName("form");
 
-                    b.Property<int>("Layout")
-                        .HasColumnType("integer")
+                    b.Property<string>("Layout")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
                         .HasColumnName("layout");
 
                     b.Property<DateOnly>("ReferenceDate")
@@ -106,7 +112,8 @@ namespace FinancialIntelligence.Infrastructure.Migrations
 
                     b.Property<string>("SourceFile")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("source_file");
 
                     b.Property<int>("Version")
@@ -114,9 +121,13 @@ namespace FinancialIntelligence.Infrastructure.Migrations
                         .HasColumnName("version");
 
                     b.HasKey("Id")
-                        .HasName("pk_filing");
+                        .HasName("pk_filings");
 
-                    b.ToTable("filing", (string)null);
+                    b.HasIndex("CvmCode", "Form", "ReferenceDate", "Version", "Basis")
+                        .IsUnique()
+                        .HasDatabaseName("ux_filings_identity");
+
+                    b.ToTable("filings", (string)null);
                 });
 
             modelBuilder.Entity("FinancialIntelligence.Domain.FinancialData.FinancialFact", b =>
@@ -184,6 +195,8 @@ namespace FinancialIntelligence.Infrastructure.Migrations
                         .IsUnique()
                         .HasDatabaseName("ux_financial_facts_value_identity");
 
+                    NpgsqlIndexBuilderExtensions.AreNullsDistinct(b.HasIndex("CvmCode", "AccountCode", "Basis", "PeriodStart", "PeriodEnd", "Version"), false);
+
                     b.ToTable("financial_facts", (string)null);
                 });
 
@@ -236,6 +249,16 @@ namespace FinancialIntelligence.Infrastructure.Migrations
                     b.ToTable("source_file_downloads", (string)null);
                 });
 
+            modelBuilder.Entity("FinancialIntelligence.Domain.FinancialData.Filing", b =>
+                {
+                    b.HasOne("FinancialIntelligence.Domain.Companies.Company", null)
+                        .WithMany()
+                        .HasForeignKey("CvmCode")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_filings_companies_cvm_code");
+                });
+
             modelBuilder.Entity("FinancialIntelligence.Domain.FinancialData.FinancialFact", b =>
                 {
                     b.HasOne("FinancialIntelligence.Domain.Companies.Company", null)
@@ -248,9 +271,9 @@ namespace FinancialIntelligence.Infrastructure.Migrations
                     b.HasOne("FinancialIntelligence.Domain.FinancialData.Filing", "Filing")
                         .WithMany()
                         .HasForeignKey("FilingId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
-                        .HasConstraintName("fk_financial_facts_filing_filing_id");
+                        .HasConstraintName("fk_financial_facts_filings_filing_id");
 
                     b.Navigation("Filing");
                 });

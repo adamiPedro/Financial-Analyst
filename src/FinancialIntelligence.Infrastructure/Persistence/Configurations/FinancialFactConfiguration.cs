@@ -16,6 +16,11 @@ internal sealed class FinancialFactConfiguration : IEntityTypeConfiguration<Fina
             .HasForeignKey(f => f.CvmCode)
             .OnDelete(DeleteBehavior.Restrict);
 
+        builder.HasOne(f => f.Filing)
+            .WithMany()
+            .HasForeignKey(f => f.FilingId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.Property(f => f.AccountCode).HasMaxLength(20).IsRequired();
 
         // Stored as text so rows read clearly in psql; the enum's numbers mean
@@ -37,6 +42,10 @@ internal sealed class FinancialFactConfiguration : IEntityTypeConfiguration<Fina
                 f.Version
             })
             .IsUnique()
+            // Balance-sheet rows have no start date. Postgres treats NULLs as
+            // distinct by default, so without this the same balance could be
+            // stored twice and the index would never notice.
+            .AreNullsDistinct(false)
             .HasDatabaseName("ux_financial_facts_value_identity");
     }
 }

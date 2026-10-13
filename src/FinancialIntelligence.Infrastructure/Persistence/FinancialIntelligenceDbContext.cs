@@ -13,6 +13,8 @@ public sealed class FinancialIntelligenceDbContext(
 
     public DbSet<FinancialFact> FinancialFacts => Set<FinancialFact>();
 
+    public DbSet<Filing> Filings => Set<Filing>();
+
     public DbSet<SourceFileDownload> SourceFileDownloads => Set<SourceFileDownload>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
