@@ -1,5 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk.Worker">
 
+  <PropertyGroup>
+    <!-- Cvm:DataDirectory ("data/raw") is relative to the current directory and
+         lives at the repo root in development; the Worker SDK would otherwise
+         run from the project folder. -->
+    <RunWorkingDirectory>$(MSBuildProjectDirectory)/../..</RunWorkingDirectory>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\FinancialIntelligence.Application\FinancialIntelligence.Application.csproj" />
     <ProjectReference Include="..\FinancialIntelligence.Infrastructure\FinancialIntelligence.Infrastructure.csproj" />

@@ -1,11 +1,11 @@
 using FinancialIntelligence.Infrastructure;
 using FinancialIntelligence.Worker;
 
-// dotnet run keeps the shell's directory as the current directory (checked),
-// and the host reads appsettings.json from there by default: run from the repo
-// root, it would find none. Config comes from the build output instead, which
-// leaves the current directory free to anchor Cvm:DataDirectory ("data/raw")
-// at the repo root.
+// dotnet run starts this project in the repo root (RunWorkingDirectory in the
+// csproj), so the relative Cvm:DataDirectory ("data/raw") lands there. The host
+// looks for appsettings.json in the current directory by default, and there is
+// none at the repo root; reading config from the build output finds it wherever
+// the process starts.
 var builder = Host.CreateApplicationBuilder(new HostApplicationBuilderSettings
 {
     Args = args,
