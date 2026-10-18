@@ -16,8 +16,9 @@ judgement about any company.
 
 ## Status
 
-M1 — in progress. CVM's company list, the downloader and the statement importer
-are in. Annual (DFP) and quarterly (ITR) statements are stored account by
+M1 — in progress. CVM's company list, the downloader, the statement importer
+and the Worker are in. The Worker syncs the company list (CAD), DFP from 2010 and
+ITR from 2011 for the 14 seed companies, at startup and then once a day. Annual (DFP) and quarterly (ITR) statements are stored account by
 account with their provenance, and each filing's layout (industrial, three bank
 layouts, insurer) is detected. Six annual metrics are served at
 `GET /api/companies/{cvmCode}/metrics/{metric}/annual`, where `metric` is one of
@@ -35,6 +36,19 @@ dotnet test
 dotnet run --project src/FinancialIntelligence.Api      # http://localhost:5080
 curl http://localhost:5080/health
 ```
+
+To load data, with the database up:
+
+```bash
+dotnet ef database update \
+  --project src/FinancialIntelligence.Infrastructure \
+  --startup-project src/FinancialIntelligence.Api
+dotnet run --project src/FinancialIntelligence.Worker   # from the repo root
+```
+
+The first run downloads about 600 MB into `data/raw/` at the repo root and takes
+minutes. Later runs mostly get "not modified" answers. The tracked company list
+and the first year live in `src/FinancialIntelligence.Worker/appsettings.json`.
 
 `docker compose down` stops the database and keeps the data.
 `docker compose down -v` removes it.

@@ -34,4 +34,8 @@ public sealed class IngestionScheduleOptionsTests
     [Fact]
     public void A_zero_interval_is_refused() =>
         Assert.Throws<OptionsValidationException>(() => Resolve("00:00:00"));
+
+    [Fact]
+    public void An_interval_longer_than_the_timer_allows_is_refused() =>
+        Assert.Throws<OptionsValidationException>(() => Resolve("60.00:00:00"));
 }
