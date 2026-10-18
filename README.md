@@ -101,25 +101,27 @@ network at all.
 
 ### Seed universe
 
-Twelve companies, chosen for long filing history and sector spread. Banks are
+Fourteen companies, chosen for long filing history and sector spread. Banks are
 included deliberately: financial institutions use a different chart of accounts,
 so handling them is harder — and it is the most relevant thing this project can
 demonstrate to its intended readers.
 
-| Company | Ticker | Why |
-| --- | --- | --- |
-| Petrobras | PETR4 | Largest filer, long history, state-influenced |
-| Vale | VALE3 | Mining, commodity-cycle volatility |
-| Itaú Unibanco | ITUB4 | Bank — different account structure |
-| Bradesco | BBDC4 | Bank — second case to prove the first wasn't a one-off |
-| Ambev | ABEV3 | Consumer staples, stable margins |
-| WEG | WEGE3 | Industrials, consistent growth |
-| Suzano | SUZB3 | Pulp, heavy FX exposure |
-| Embraer | EMBR3 | Aerospace, lumpy revenue |
-| Magazine Luiza | MGLU3 | Retail, dramatic swings — good anomaly candidate |
-| B3 | B3SA3 | The exchange itself, financial-sector-adjacent |
-| Localiza | RENT3 | Asset-heavy services |
-| JBS | JBSS3 | Protein, international operations |
+| Company | CVM code | Ticker | Why |
+| --- | --- | --- | --- |
+| Petrobras | 9512 | PETR4 | Largest filer, long history, state-influenced |
+| Vale | 4170 | VALE3 | Mining, commodity-cycle volatility |
+| Itaú Unibanco | 19348 | ITUB4 | Bank — different account structure |
+| Bradesco | 906 | BBDC4 | Bank — second case to prove the first wasn't a one-off |
+| Banco do Brasil | 1023 | BBAS3 | Bank — state-controlled, third bank case |
+| Santander Brasil | 20532 | SANB11 | Bank — foreign-controlled, fourth bank case |
+| Ambev | 23264 | ABEV3 | Consumer staples, stable margins |
+| WEG | 5410 | WEGE3 | Industrials, consistent growth |
+| Suzano | 13986 | SUZB3 | Pulp, heavy FX exposure |
+| Embraer | 20087 | EMBR3 | Aerospace, lumpy revenue |
+| Magazine Luiza | 22470 | MGLU3 | Retail, dramatic swings — good anomaly candidate |
+| B3 | 21610 | B3SA3 | The exchange itself, financial-sector-adjacent |
+| Localiza | 19739 | RENT3 | Asset-heavy services |
+| JBS | 20575 | JBSS3 | Protein, international operations |
 
 ## Known limitations
 
