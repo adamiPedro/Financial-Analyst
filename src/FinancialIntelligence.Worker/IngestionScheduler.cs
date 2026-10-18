@@ -40,7 +40,7 @@ internal sealed partial class IngestionScheduler(
         // An exception that escapes ExecuteAsync stops the whole host (the
         // default BackgroundServiceExceptionBehavior since .NET 6), so one bad
         // run would end every later one. Logged instead; the next tick retries.
-        catch (Exception e) when (!stoppingToken.IsCancellationRequested)
+        catch (Exception e) when (e is not OperationCanceledException || !stoppingToken.IsCancellationRequested)
         {
             LogRunFailed(logger, e);
         }

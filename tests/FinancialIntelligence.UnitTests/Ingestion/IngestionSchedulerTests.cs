@@ -100,6 +100,23 @@ public sealed class IngestionSchedulerTests : IDisposable
         Assert.Empty(Problems());
     }
 
+    [Fact]
+    public async Task A_run_that_fails_with_a_real_error_while_stopping_is_still_logged()
+    {
+        _sync.HangUntilCancelled = true;
+        _sync.FailWhenCancelled = new InvalidOperationException("Connection reset while unwinding.");
+        using var scheduler = Scheduler();
+        await scheduler.StartAsync(CancellationToken.None);
+        await _sync.WaitForRunAsync(1);
+
+        await scheduler.StopAsync(CancellationToken.None);
+
+        Assert.True(scheduler.ExecuteTask!.IsCompletedSuccessfully);
+        var error = Assert.Single(Problems());
+        Assert.Equal(LogLevel.Error, error.Level);
+        Assert.Same(_sync.FailWhenCancelled, error.Exception);
+    }
+
     private sealed class FakeSync(TimeProvider clock) : IIngestionSync, IDisposable
     {
         private readonly SemaphoreSlim _started = new(0);
@@ -111,6 +128,8 @@ public sealed class IngestionSchedulerTests : IDisposable
 
         public bool HangUntilCancelled { get; set; }
 
+        public Exception? FailWhenCancelled { get; set; }
+
         public async Task<IngestionSyncResult> RunAsync(CancellationToken cancellationToken)
         {
             RunTimes.Add(clock.GetUtcNow());
@@ -118,7 +137,14 @@ public sealed class IngestionSchedulerTests : IDisposable
 
             if (HangUntilCancelled)
             {
-                await Task.Delay(Timeout.Infinite, cancellationToken);
+                try
+                {
+                    await Task.Delay(Timeout.Infinite, cancellationToken);
+                }
+                catch (OperationCanceledException) when (FailWhenCancelled is not null)
+                {
+                    throw FailWhenCancelled;
+                }
             }
 
             if (FailWith is not null)
