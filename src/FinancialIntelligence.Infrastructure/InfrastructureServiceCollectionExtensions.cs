@@ -2,9 +2,11 @@ using FinancialIntelligence.Application.FinancialData;
 using FinancialIntelligence.Infrastructure.Companies;
 using FinancialIntelligence.Infrastructure.Cvm;
 using FinancialIntelligence.Infrastructure.FinancialData;
+using FinancialIntelligence.Infrastructure.Ingestion;
 using FinancialIntelligence.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
 namespace FinancialIntelligence.Infrastructure;
@@ -52,6 +54,28 @@ public static class InfrastructureServiceCollectionExtensions
                 // attempt timeout - it has to see a few attempts to judge a failure rate.
                 resilience.CircuitBreaker.SamplingDuration = TimeSpan.FromMinutes(10);
             });
+
+        return services;
+    }
+
+    /// <summary>
+    /// Separate from AddInfrastructure because only the Worker syncs. The Api
+    /// calls AddInfrastructure too, and ValidateOnStart would otherwise make it
+    /// refuse to start for want of a tracked list it never reads.
+    /// </summary>
+    public static IServiceCollection AddIngestion(this IServiceCollection services)
+    {
+        services.TryAddSingleton(TimeProvider.System);
+
+        services.AddOptions<StatementsOptions>()
+            .BindConfiguration(StatementsOptions.Section)
+            .Validate(
+                o => o.TrackedCompanies.Count > 0 && o.TrackedCompanies.All(code => code > 0),
+                "Statements:TrackedCompanies must list at least one CVM code, all positive.")
+            .Validate<TimeProvider>(
+                (o, clock) => o.FirstYear >= CvmFile.FirstDfpYear && o.FirstYear <= clock.GetUtcNow().Year,
+                $"Statements:FirstYear must be between {CvmFile.FirstDfpYear} and the current year.")
+            .ValidateOnStart();
 
         return services;
     }

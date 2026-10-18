@@ -9,6 +9,11 @@ namespace FinancialIntelligence.Infrastructure.Cvm;
 /// </summary>
 public sealed record CvmFile(string FileName, string UrlPath)
 {
+    // The first year each yearly file exists on CVM's portal (checked 15 Oct 2026):
+    // itr_cia_aberta_2010.zip is a 404.
+    public const int FirstDfpYear = 2010;
+    public const int FirstItrYear = 2011;
+
     public static CvmFile Cad { get; } = new("cad_cia_aberta.csv", "CIA_ABERTA/CAD/DADOS/cad_cia_aberta.csv");
 
     public static CvmFile Dfp(int year) => Yearly("DFP", year);
