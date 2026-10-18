@@ -180,6 +180,16 @@ public sealed class IngestionSyncTests : IAsyncLifetime, IDisposable
         Assert.Equal(2, result.FilingsAdded);
         await using var db = _database.CreateContext();
         Assert.Equal(2, await db.Filings.CountAsync(f => f.CvmCode == 19348));
+
+        // A 304 must carry the original download time into provenance, not stamp "now".
+        // Both values are read back from Postgres so microsecond rounding cancels out.
+        var firstDownload = await db.SourceFileDownloads
+            .Where(d => d.FileName == Dfp2024)
+            .OrderBy(d => d.DownloadedAt)
+            .FirstAsync();
+        var retrievedAt = await db.Filings.Where(f => f.CvmCode == 19348).Select(f => f.RetrievedAt).ToListAsync();
+        Assert.NotEmpty(retrievedAt);
+        Assert.All(retrievedAt, t => Assert.Equal(firstDownload.DownloadedAt, t));
     }
 
     [Fact]
