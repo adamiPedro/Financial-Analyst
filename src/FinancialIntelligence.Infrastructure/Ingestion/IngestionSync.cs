@@ -85,6 +85,13 @@ public sealed partial class IngestionSync(
             tally.NotPublished++;
             LogNotPublished(logger, file.FileName);
         }
+        // Shutdown is the one thing that ends the run. Anything else is this
+        // file's problem: logged, counted, and retried by tomorrow's run.
+        catch (Exception e) when (!cancellationToken.IsCancellationRequested)
+        {
+            tally.Failed++;
+            LogFileFailed(logger, e, file.FileName);
+        }
     }
 
     private sealed class Tally
@@ -97,6 +104,9 @@ public sealed partial class IngestionSync(
 
     [LoggerMessage(Level = LogLevel.Information, Message = "{FileName} is not published yet; skipped.")]
     private static partial void LogNotPublished(ILogger logger, string fileName);
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "{FileName} failed; the rest of the run carries on.")]
+    private static partial void LogFileFailed(ILogger logger, Exception exception, string fileName);
 
     [LoggerMessage(Level = LogLevel.Information,
         Message = "Ingestion finished: {Imported} files imported, {NotPublished} not published yet, {Failed} failed, {FilingsAdded} filings added.")]
