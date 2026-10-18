@@ -10,10 +10,14 @@ namespace FinancialIntelligence.IntegrationTests.Cvm;
 internal sealed class FakeCvm : HttpMessageHandler
 {
     private readonly Queue<Func<HttpResponseMessage>> _replies = new();
+    private readonly Dictionary<string, Func<HttpResponseMessage>> _files = new(StringComparer.Ordinal);
 
     public List<SentRequest> Requests { get; } = [];
 
     public void Reply(Func<HttpResponseMessage> reply) => _replies.Enqueue(reply);
+
+    /// <summary>Answers every request for this file name, ahead of the queue.</summary>
+    public void Serve(string fileName, Func<HttpResponseMessage> reply) => _files[fileName] = reply;
 
     protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
@@ -22,7 +26,9 @@ internal sealed class FakeCvm : HttpMessageHandler
             : null;
         Requests.Add(new SentRequest(request.RequestUri, ifNoneMatch));
 
-        return Task.FromResult(_replies.Dequeue()());
+        var fileName = Path.GetFileName(request.RequestUri!.AbsolutePath);
+        var reply = _files.TryGetValue(fileName, out var served) ? served : _replies.Dequeue();
+        return Task.FromResult(reply());
     }
 
     public static HttpResponseMessage Ok(byte[] body, string eTag)

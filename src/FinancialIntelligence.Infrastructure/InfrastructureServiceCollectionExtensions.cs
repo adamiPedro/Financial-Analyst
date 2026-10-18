@@ -1,4 +1,5 @@
 using FinancialIntelligence.Application.FinancialData;
+using FinancialIntelligence.Application.Ingestion;
 using FinancialIntelligence.Infrastructure.Companies;
 using FinancialIntelligence.Infrastructure.Cvm;
 using FinancialIntelligence.Infrastructure.FinancialData;
@@ -76,6 +77,9 @@ public static class InfrastructureServiceCollectionExtensions
                 (o, clock) => o.FirstYear >= CvmFile.FirstDfpYear && o.FirstYear <= clock.GetUtcNow().Year,
                 $"Statements:FirstYear must be between {CvmFile.FirstDfpYear} and the current year.")
             .ValidateOnStart();
+
+        // Singleton: it holds nothing per run. Each file gets its own scope inside.
+        services.AddSingleton<IIngestionSync, IngestionSync>();
 
         return services;
     }
