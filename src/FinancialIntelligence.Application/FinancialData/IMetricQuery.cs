@@ -42,4 +42,10 @@ public interface IMetricQuery
     /// one basis. Null when the company is unknown; empty when nothing is imported.
     /// </summary>
     Task<MetricSeries?> GetAnnualAsync(int cvmCode, Metric metric, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// One point per quarter, oldest first, on the same basis as the annual
+    /// series. Q4 of a flow is calculated, as are cash-flow Q2 and Q3.
+    /// </summary>
+    Task<MetricSeries?> GetQuarterlyAsync(int cvmCode, Metric metric, CancellationToken cancellationToken);
 }

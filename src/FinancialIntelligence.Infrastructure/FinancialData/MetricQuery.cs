@@ -29,6 +29,51 @@ internal sealed partial class MetricQuery(FinancialIntelligenceDbContext db, ILo
         return Series(metric, basis, annual.Select(f => PointFor(f, rules[f.Id], facts[f.Id].ToList())).ToList());
     }
 
+    public async Task<MetricSeries?> GetQuarterlyAsync(int cvmCode, Metric metric, CancellationToken cancellationToken)
+    {
+        if (!await db.Companies.AnyAsync(c => c.CvmCode == cvmCode, cancellationToken))
+        {
+            return null;
+        }
+
+        var (basis, latest) = await LatestFilingsAsync(cvmCode, cancellationToken);
+        var rules = latest.ToDictionary(f => f.Id, f => MetricMap.Find(f.Layout, f.Basis, metric));
+        var facts = await FactsAsync(rules, cancellationToken);
+
+        // A balance is a position on a date: each filing's own figure, the
+        // DFP's year-end one included, is the quarter.
+        if (metric.Kind() == MetricKind.Balance)
+        {
+            return Series(metric, basis, latest.Select(f => PointFor(f, rules[f.Id], facts[f.Id].ToList())).ToList());
+        }
+
+        var periods = latest.Select(f => FlowPeriodOf(f, rules[f.Id], facts[f.Id].ToList())).ToList();
+        var quarters = QuarterlyFlow.Derive(periods);
+
+        return Series(metric, basis, latest
+            .Select((f, i) => rules[f.Id] is NotApplicable ? NotApplicablePoint(f) : ToPoint(f, quarters[i]))
+            .ToList());
+    }
+
+    // An ITR states Q2 and Q3 income twice, three months and year to date, on
+    // the same end date. The year-to-date row starts with the year; a
+    // three-month row starts inside the last three months. In Q1 they are one row.
+    private FlowPeriod FlowPeriodOf(Filing filing, MetricRule rule, List<FinancialFact> facts)
+    {
+        if (rule is NotApplicable || facts.Min(f => f.PeriodStart) is not { } yearStart)
+        {
+            return new FlowPeriod(null, filing.ReferenceDate, null, null);
+        }
+
+        var lastThreeMonths = filing.ReferenceDate.AddMonths(-3);
+
+        return new FlowPeriod(
+            yearStart,
+            filing.ReferenceDate,
+            Read(filing, rule, facts.Where(f => f.PeriodStart > lastThreeMonths).ToList()),
+            Read(filing, rule, facts.Where(f => f.PeriodStart == yearStart).ToList()));
+    }
+
     private async Task<(AccountingBasis Basis, List<Filing> Latest)> LatestFilingsAsync(int cvmCode, CancellationToken cancellationToken)
     {
         var filings = await db.Filings
