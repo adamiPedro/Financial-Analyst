@@ -14,6 +14,8 @@ internal sealed partial class MetricQuery(FinancialIntelligenceDbContext db, ILo
 
     private static readonly IReadOnlyList<MetricSource> NoSources = [];
 
+    private sealed record Period(FilingForm Form, DateOnly ReferenceDate, Filing? Filing);
+
     public async Task<MetricSeries?> GetAnnualAsync(int cvmCode, Metric metric, CancellationToken cancellationToken)
     {
         if (!await db.Companies.AnyAsync(c => c.CvmCode == cvmCode, cancellationToken))
@@ -22,11 +24,11 @@ internal sealed partial class MetricQuery(FinancialIntelligenceDbContext db, ILo
         }
 
         var (basis, latest) = await LatestFilingsAsync(cvmCode, cancellationToken);
-        var annual = latest.Where(f => f.Form == FilingForm.Dfp).ToList();
-        var rules = annual.ToDictionary(f => f.Id, f => MetricMap.Find(f.Layout, f.Basis, metric));
+        var annual = latest.Where(p => p.Form == FilingForm.Dfp).ToList();
+        var rules = RulesFor(annual, metric);
         var facts = await FactsAsync(rules, cancellationToken);
 
-        return Series(metric, basis, annual.Select(f => PointFor(f, rules[f.Id], facts[f.Id].ToList())).ToList());
+        return Series(metric, basis, annual, annual.Select(p => PointFor(p, rules, facts)).ToList());
     }
 
     public async Task<MetricSeries?> GetQuarterlyAsync(int cvmCode, Metric metric, CancellationToken cancellationToken)
@@ -37,23 +39,34 @@ internal sealed partial class MetricQuery(FinancialIntelligenceDbContext db, ILo
         }
 
         var (basis, latest) = await LatestFilingsAsync(cvmCode, cancellationToken);
-        var rules = latest.ToDictionary(f => f.Id, f => MetricMap.Find(f.Layout, f.Basis, metric));
+        var rules = RulesFor(latest, metric);
         var facts = await FactsAsync(rules, cancellationToken);
 
         // A balance is a position on a date: each filing's own figure, the
         // DFP's year-end one included, is the quarter.
         if (metric.Kind() == MetricKind.Balance)
         {
-            return Series(metric, basis, latest.Select(f => PointFor(f, rules[f.Id], facts[f.Id].ToList())).ToList());
+            return Series(metric, basis, latest, latest.Select(p => PointFor(p, rules, facts)).ToList());
         }
 
-        var periods = latest.Select(f => FlowPeriodOf(f, rules[f.Id], facts[f.Id].ToList())).ToList();
-        var quarters = QuarterlyFlow.Derive(periods);
+        // A gap still goes into the chain: Derive must not subtract across it.
+        var flows = latest
+            .Select(p => p.Filing is { } filing
+                ? FlowPeriodOf(filing, rules[filing.Id], facts[filing.Id].ToList())
+                : new FlowPeriod(null, p.ReferenceDate, null, null))
+            .ToList();
+        var quarters = QuarterlyFlow.Derive(flows);
 
-        return Series(metric, basis, latest
-            .Select((f, i) => rules[f.Id] is NotApplicable ? NotApplicablePoint(f) : ToPoint(f, quarters[i]))
+        return Series(metric, basis, latest, latest
+            .Select((p, i) => p.Filing is not { } filing ? MissingPoint(p.ReferenceDate)
+                : rules[filing.Id] is NotApplicable ? NotApplicablePoint(p.ReferenceDate)
+                : ToPoint(p.ReferenceDate, quarters[i]))
             .ToList());
     }
+
+    private static Dictionary<long, MetricRule> RulesFor(List<Period> periods, Metric metric) =>
+        periods.Where(p => p.Filing is not null)
+            .ToDictionary(p => p.Filing!.Id, p => MetricMap.Find(p.Filing!.Layout, p.Filing.Basis, metric));
 
     // An ITR states Q2 and Q3 income twice, three months and year to date, on
     // the same end date. The year-to-date row starts with the year; a
@@ -74,7 +87,7 @@ internal sealed partial class MetricQuery(FinancialIntelligenceDbContext db, ILo
             Read(filing, rule, facts.Where(f => f.PeriodStart == yearStart).ToList()));
     }
 
-    private async Task<(AccountingBasis Basis, List<Filing> Latest)> LatestFilingsAsync(int cvmCode, CancellationToken cancellationToken)
+    private async Task<(AccountingBasis Basis, List<Period> Latest)> LatestFilingsAsync(int cvmCode, CancellationToken cancellationToken)
     {
         var filings = await db.Filings
             .AsNoTracking()
@@ -87,11 +100,15 @@ internal sealed partial class MetricQuery(FinancialIntelligenceDbContext db, ILo
             ? AccountingBasis.Consolidated
             : AccountingBasis.Individual;
 
+        // Periods are taken from both bases so one filed only on the other
+        // basis stays in the series, with a null Filing.
         var latest = filings
-            .Where(f => f.Basis == basis)
             .GroupBy(f => (f.Form, f.ReferenceDate))
-            .Select(period => period.MaxBy(f => f.Version)!)
-            .OrderBy(f => f.ReferenceDate)
+            .Select(period => new Period(
+                period.Key.Form,
+                period.Key.ReferenceDate,
+                period.Where(f => f.Basis == basis).MaxBy(f => f.Version)))
+            .OrderBy(p => p.ReferenceDate)
             .ToList();
 
         return (basis, latest);
@@ -110,11 +127,32 @@ internal sealed partial class MetricQuery(FinancialIntelligenceDbContext db, ILo
             .ToLookup(f => f.FilingId);
     }
 
-    private static MetricSeries Series(Metric metric, AccountingBasis basis, List<MetricPoint> points) =>
-        new(metric, basis, points.Count > 0 && points.All(p => p.Status == MetricPointStatus.NotApplicable), points);
+    // Placeholders don't count towards NotApplicable: a bank with a gap in its
+    // filings still has no revenue.
+    private static MetricSeries Series(Metric metric, AccountingBasis basis, List<Period> periods, List<MetricPoint> points)
+    {
+        var filed = points.Where((_, i) => periods[i].Filing is not null).ToList();
 
-    private MetricPoint PointFor(Filing filing, MetricRule rule, List<FinancialFact> facts) =>
-        rule is NotApplicable ? NotApplicablePoint(filing) : ToPoint(filing, Read(filing, rule, facts));
+        return new(metric, basis, filed.Count > 0 && filed.All(p => p.Status == MetricPointStatus.NotApplicable), points);
+    }
+
+    private MetricPoint PointFor(Period period, Dictionary<long, MetricRule> rules, ILookup<long, FinancialFact> facts)
+    {
+        if (period.Filing is not { } filing)
+        {
+            return MissingPoint(period.ReferenceDate);
+        }
+
+        var rule = rules[filing.Id];
+
+        return rule is NotApplicable
+            ? NotApplicablePoint(period.ReferenceDate)
+            : ToPoint(period.ReferenceDate, Read(filing, rule, facts[filing.Id].ToList()));
+    }
+
+    // ADR 0008 point 3: a period missing from the chosen basis is reported,
+    // never filled from the other basis's filing.
+    private static MetricPoint MissingPoint(DateOnly periodEnd) => ToPoint(periodEnd, null);
 
     // Null when the rule gives no trustworthy value from these facts.
     private Reading? Read(Filing filing, MetricRule rule, List<FinancialFact> facts)
@@ -152,13 +190,13 @@ internal sealed partial class MetricQuery(FinancialIntelligenceDbContext db, ILo
 
     // A fact's Version is its filing's version, which is what lets a calculated
     // point built from different filings name each one.
-    private static MetricPoint ToPoint(Filing filing, Reading? reading) => reading is null
-        ? new(filing.ReferenceDate, MetricPointStatus.Unavailable, null, false, NoSources)
-        : new(filing.ReferenceDate, MetricPointStatus.Value, reading.Value, reading.IsCalculated,
+    private static MetricPoint ToPoint(DateOnly periodEnd, Reading? reading) => reading is null
+        ? new(periodEnd, MetricPointStatus.Unavailable, null, false, NoSources)
+        : new(periodEnd, MetricPointStatus.Value, reading.Value, reading.IsCalculated,
             reading.Sources.Select(f => new MetricSource(f.AccountCode, f.SourceFile, f.Version, f.RetrievedAt)).ToList());
 
-    private static MetricPoint NotApplicablePoint(Filing filing) =>
-        new(filing.ReferenceDate, MetricPointStatus.NotApplicable, null, false, NoSources);
+    private static MetricPoint NotApplicablePoint(DateOnly periodEnd) =>
+        new(periodEnd, MetricPointStatus.NotApplicable, null, false, NoSources);
 
     private static IEnumerable<string> AccountsOf(MetricRule rule) => rule switch
     {

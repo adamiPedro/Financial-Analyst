@@ -131,6 +131,27 @@ public sealed class QuarterlyMetricQueryTests : IAsyncLifetime, IDisposable
     }
 
     [Fact]
+    public async Task A_quarter_filed_only_on_the_other_basis_is_unavailable_and_breaks_the_cash_flow_chain()
+    {
+        await ImportAsync("dfp_2024", Dfp2024, FilingForm.Dfp);
+        await ImportAsync("itr_2024", Itr2024, FilingForm.Itr, (name, line) =>
+            name.Contains("_con_", StringComparison.Ordinal)
+            && line.StartsWith("33.000.167/0001-01;2024-06-30;", StringComparison.Ordinal) ? [] : [line]);
+
+        var revenue = await QueryAsync(Petrobras, Metric.Revenue);
+        var cashFlow = await QueryAsync(Petrobras, Metric.OperatingCashFlow);
+
+        Assert.Equal(AccountingBasis.Consolidated, revenue.Basis);
+        Assert.Equal(QuarterEnds, revenue.Points.Select(p => p.PeriodEnd));
+        Assert.Equal([MetricPointStatus.Value, MetricPointStatus.Unavailable, MetricPointStatus.Value, MetricPointStatus.Value], revenue.Points.Select(p => p.Status));
+        Assert.Equal([117_721_000_000m, null, 129_582_000_000m, 121_268_000_000m], revenue.Points.Select(p => p.Value));
+        Assert.Empty(revenue.Points[1].Sources);
+        Assert.False(revenue.Points[1].IsCalculated);
+        Assert.Equal([MetricPointStatus.Value, MetricPointStatus.Unavailable, MetricPointStatus.Unavailable, MetricPointStatus.Value], cashFlow.Points.Select(p => p.Status));
+        Assert.Equal([46_481_000_000m, null, null, 47_666_000_000m], cashFlow.Points.Select(p => p.Value));
+    }
+
+    [Fact]
     public async Task An_unknown_company_has_no_series()
     {
         await using var db = _database.CreateContext();

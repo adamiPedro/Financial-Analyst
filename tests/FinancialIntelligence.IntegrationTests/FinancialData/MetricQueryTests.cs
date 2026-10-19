@@ -193,7 +193,30 @@ public sealed class MetricQueryTests : IAsyncLifetime, IDisposable
         var series = (await QueryAsync(Petrobras, Metric.Revenue))!;
 
         Assert.Equal(AccountingBasis.Consolidated, series.Basis);
-        Assert.Empty(series.Points);
+        var point = Assert.Single(series.Points);
+        Assert.Equal(YearEnd2024, point.PeriodEnd);
+        Assert.Equal(MetricPointStatus.Unavailable, point.Status);
+        Assert.Null(point.Value);
+        Assert.Empty(point.Sources);
+
+        await using var db = _database.CreateContext();
+        var quarterly = (await new MetricQuery(db, NullLogger<MetricQuery>.Instance)
+            .GetQuarterlyAsync(Petrobras, Metric.Revenue, CancellationToken.None))!;
+        Assert.Equal(AccountingBasis.Consolidated, quarterly.Basis);
+    }
+
+    [Fact]
+    public async Task A_bank_series_with_a_period_on_the_other_basis_only_stays_not_applicable()
+    {
+        // Bradesco 2017 only on the individual basis, 2024 consolidated.
+        await ImportAsync("dfp_2017", "dfp_cia_aberta_2017.zip", (name, line) =>
+            name.Contains("_con_", StringComparison.Ordinal) && line.StartsWith("60.746.948/0001-12;", StringComparison.Ordinal) ? [] : [line]);
+        await Import2024Async();
+
+        var series = (await QueryAsync(Bradesco, Metric.Revenue))!;
+
+        Assert.True(series.NotApplicable);
+        Assert.Equal([MetricPointStatus.Unavailable, MetricPointStatus.NotApplicable], series.Points.Select(p => p.Status));
     }
 
     [Fact]
