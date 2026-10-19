@@ -68,8 +68,7 @@ public sealed class MetricQueryTests : IAsyncLifetime, IDisposable
         Assert.Equal(MetricPointStatus.Value, point.Status);
         Assert.Equal(490_829_000_000m, point.Value);
         Assert.False(point.IsCalculated);
-        Assert.Equal(1, point.Version);
-        Assert.Equal(new MetricSource("3.01", Dfp2024, Downloaded), Assert.Single(point.Sources));
+        Assert.Equal(new MetricSource("3.01", Dfp2024, 1, Downloaded), Assert.Single(point.Sources));
     }
 
     [Fact]
@@ -110,7 +109,6 @@ public sealed class MetricQueryTests : IAsyncLifetime, IDisposable
         var point = Assert.Single(series.Points);
         Assert.Equal(MetricPointStatus.NotApplicable, point.Status);
         Assert.Null(point.Value);
-        Assert.Null(point.Version);
         Assert.Empty(point.Sources);
     }
 
@@ -150,8 +148,8 @@ public sealed class MetricQueryTests : IAsyncLifetime, IDisposable
         var points = (await QueryAsync(Bradesco, Metric.NetIncome))!.Points;
 
         Assert.Equal(2, points.Count);
-        Assert.Equal((new DateOnly(2017, 12, 31), 17_089_364_000m, 2), (points[0].PeriodEnd, points[0].Value!.Value, points[0].Version!.Value));
-        Assert.Equal((YearEnd2024, 17_252_900_000m, 1), (points[1].PeriodEnd, points[1].Value!.Value, points[1].Version!.Value));
+        Assert.Equal((new DateOnly(2017, 12, 31), 17_089_364_000m, 2), (points[0].PeriodEnd, points[0].Value!.Value, Assert.Single(points[0].Sources).FilingVersion));
+        Assert.Equal((YearEnd2024, 17_252_900_000m, 1), (points[1].PeriodEnd, points[1].Value!.Value, Assert.Single(points[1].Sources).FilingVersion));
     }
 
     [Fact]
@@ -164,7 +162,7 @@ public sealed class MetricQueryTests : IAsyncLifetime, IDisposable
 
         var point = await SinglePointAsync(Petrobras, Metric.Revenue);
 
-        Assert.Equal(2, point.Version);
+        Assert.Equal(2, Assert.Single(point.Sources).FilingVersion);
         Assert.Equal(491_000_000_000m, point.Value);
     }
 
@@ -181,6 +179,21 @@ public sealed class MetricQueryTests : IAsyncLifetime, IDisposable
         var point = Assert.Single(series.Points);
         Assert.Equal(366_006_000_000m, point.Value);
         Assert.False(point.IsCalculated);
+    }
+
+    [Fact]
+    public async Task The_basis_is_chosen_from_quarterly_filings_too()
+    {
+        // Consolidated ITRs, individual-only DFP: both series must resolve to
+        // consolidated, or a Q4 would subtract across bases.
+        await Import2024Async((name, line) =>
+            name.Contains("_con_", StringComparison.Ordinal) && line.StartsWith(PetrobrasRow, StringComparison.Ordinal) ? [] : [line]);
+        await ImportAsync("itr_2024", "itr_cia_aberta_2024.zip", form: FilingForm.Itr);
+
+        var series = (await QueryAsync(Petrobras, Metric.Revenue))!;
+
+        Assert.Equal(AccountingBasis.Consolidated, series.Basis);
+        Assert.Empty(series.Points);
     }
 
     [Fact]

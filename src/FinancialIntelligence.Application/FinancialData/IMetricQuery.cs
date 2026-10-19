@@ -13,19 +13,19 @@ public enum MetricPointStatus
     NotApplicable = 3
 }
 
-/// <summary>One published row a value was read from.</summary>
-public sealed record MetricSource(string AccountCode, string SourceFile, DateTimeOffset RetrievedAt);
+/// <summary>One published row a value was read from, and the filing version that published it.</summary>
+public sealed record MetricSource(string AccountCode, string SourceFile, int FilingVersion, DateTimeOffset RetrievedAt);
 
 /// <summary>
-/// One year. Value, Version and Sources are present only when Status is Value.
-/// IsCalculated marks a value worked out from two rows rather than published.
+/// One period. Value and Sources are present only when Status is Value.
+/// IsCalculated marks a value worked out from several rows rather than published;
+/// its sources can come from different filings, each with its own version.
 /// </summary>
 public sealed record MetricPoint(
     DateOnly PeriodEnd,
     MetricPointStatus Status,
     decimal? Value,
     bool IsCalculated,
-    int? Version,
     IReadOnlyList<MetricSource> Sources);
 
 /// <summary>NotApplicable is true when every point is, e.g. revenue for a bank.</summary>
