@@ -65,6 +65,7 @@ public sealed class MetricEndpointTests : IAsyncLifetime, IDisposable
         Assert.Equal(121_268_000_000m, q4.Value);
         Assert.True(q4.IsCalculated);
         Assert.Equal(["dfp_cia_aberta_2024.zip", "itr_cia_aberta_2024.zip"], q4.Sources.Select(s => s.SourceFile));
+        Assert.Equal([new DateOnly(2024, 12, 31), new DateOnly(2024, 9, 30)], q4.Sources.Select(s => s.PeriodEnd));
         Assert.All(q4.Sources, s => Assert.Equal(1, s.FilingVersion));
     }
 

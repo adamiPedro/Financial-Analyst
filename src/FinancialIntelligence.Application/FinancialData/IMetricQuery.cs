@@ -13,8 +13,13 @@ public enum MetricPointStatus
     NotApplicable = 3
 }
 
-/// <summary>One published row a value was read from, and the filing version that published it.</summary>
-public sealed record MetricSource(string AccountCode, string SourceFile, int FilingVersion, DateTimeOffset RetrievedAt);
+/// <summary>
+/// One published row a value was read from, and the filing version that published it.
+/// The period is there because a calculated point's rows can share account and file:
+/// it says which period each covers. PeriodStart is null for a balance.
+/// </summary>
+public sealed record MetricSource(
+    string AccountCode, DateOnly? PeriodStart, DateOnly PeriodEnd, string SourceFile, int FilingVersion, DateTimeOffset RetrievedAt);
 
 /// <summary>
 /// One period. Value and Sources are present only when Status is Value.

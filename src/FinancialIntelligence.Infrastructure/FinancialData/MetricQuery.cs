@@ -193,7 +193,7 @@ internal sealed partial class MetricQuery(FinancialIntelligenceDbContext db, ILo
     private static MetricPoint ToPoint(DateOnly periodEnd, Reading? reading) => reading is null
         ? new(periodEnd, MetricPointStatus.Unavailable, null, false, NoSources)
         : new(periodEnd, MetricPointStatus.Value, reading.Value, reading.IsCalculated,
-            reading.Sources.Select(f => new MetricSource(f.AccountCode, f.SourceFile, f.Version, f.RetrievedAt)).ToList());
+            reading.Sources.Select(f => new MetricSource(f.AccountCode, f.PeriodStart, f.PeriodEnd, f.SourceFile, f.Version, f.RetrievedAt)).ToList());
 
     private static MetricPoint NotApplicablePoint(DateOnly periodEnd) =>
         new(periodEnd, MetricPointStatus.NotApplicable, null, false, NoSources);

@@ -3,7 +3,8 @@ using FinancialIntelligence.Domain.FinancialData;
 
 namespace FinancialIntelligence.Api.Companies;
 
-public sealed record MetricSourceResponse(string AccountCode, string SourceFile, int FilingVersion, DateTimeOffset RetrievedAt);
+public sealed record MetricSourceResponse(
+    string AccountCode, DateOnly? PeriodStart, DateOnly PeriodEnd, string SourceFile, int FilingVersion, DateTimeOffset RetrievedAt);
 
 public sealed record MetricPointResponse(
     DateOnly PeriodEnd,
@@ -64,6 +65,6 @@ internal static class MetricEndpoints
         new(NameOf[series.Metric], series.Basis.ToString(), series.NotApplicable,
             series.Points.Select(p => new MetricPointResponse(
                 p.PeriodEnd, p.Status.ToString(), p.Value, p.IsCalculated,
-                p.Sources.Select(s => new MetricSourceResponse(s.AccountCode, s.SourceFile, s.FilingVersion, s.RetrievedAt)).ToList()))
+                p.Sources.Select(s => new MetricSourceResponse(s.AccountCode, s.PeriodStart, s.PeriodEnd, s.SourceFile, s.FilingVersion, s.RetrievedAt)).ToList()))
             .ToList());
 }

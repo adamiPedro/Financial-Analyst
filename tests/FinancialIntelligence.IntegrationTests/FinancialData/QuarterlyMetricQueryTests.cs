@@ -152,6 +152,24 @@ public sealed class QuarterlyMetricQueryTests : IAsyncLifetime, IDisposable
     }
 
     [Fact]
+    public async Task Each_source_names_its_period()
+    {
+        await ImportYearAsync();
+
+        var cashFlow = await QueryAsync(Petrobras, Metric.OperatingCashFlow);
+        var revenue = await QueryAsync(Petrobras, Metric.Revenue);
+        var assets = await QueryAsync(Petrobras, Metric.TotalAssets);
+
+        Assert.Equal(
+            [("6.01", (DateOnly?)new DateOnly(2024, 1, 1), new DateOnly(2024, 6, 30)), ("6.01", new DateOnly(2024, 1, 1), new DateOnly(2024, 3, 31))],
+            cashFlow.Points[1].Sources.Select(s => (s.AccountCode, s.PeriodStart, s.PeriodEnd)));
+        Assert.Equal(
+            [("3.01", (DateOnly?)new DateOnly(2024, 1, 1), new DateOnly(2024, 12, 31), Dfp2024), ("3.01", new DateOnly(2024, 1, 1), new DateOnly(2024, 9, 30), Itr2024)],
+            revenue.Points[3].Sources.Select(s => (s.AccountCode, s.PeriodStart, s.PeriodEnd, s.SourceFile)));
+        Assert.Null(Assert.Single(assets.Points[3].Sources).PeriodStart);
+    }
+
+    [Fact]
     public async Task An_unknown_company_has_no_series()
     {
         await using var db = _database.CreateContext();

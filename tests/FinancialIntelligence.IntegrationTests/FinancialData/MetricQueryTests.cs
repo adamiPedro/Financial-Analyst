@@ -68,7 +68,7 @@ public sealed class MetricQueryTests : IAsyncLifetime, IDisposable
         Assert.Equal(MetricPointStatus.Value, point.Status);
         Assert.Equal(490_829_000_000m, point.Value);
         Assert.False(point.IsCalculated);
-        Assert.Equal(new MetricSource("3.01", Dfp2024, 1, Downloaded), Assert.Single(point.Sources));
+        Assert.Equal(new MetricSource("3.01", new DateOnly(2024, 1, 1), YearEnd2024, Dfp2024, 1, Downloaded), Assert.Single(point.Sources));
     }
 
     [Fact]
