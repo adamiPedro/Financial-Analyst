@@ -36,21 +36,28 @@ internal static class MetricEndpoints
 
     public static void MapMetricEndpoints(this IEndpointRouteBuilder app)
     {
-        app.MapGet("/api/companies/{cvmCode:int}/metrics/{metric}/annual", async (
+        app.MapGet("/api/companies/{cvmCode:int}/metrics/{metric}/annual", (
             int cvmCode, string metric, IMetricQuery query, CancellationToken cancellationToken) =>
+            SeriesAsync(metric, known => query.GetAnnualAsync(cvmCode, known, cancellationToken)));
+
+        app.MapGet("/api/companies/{cvmCode:int}/metrics/{metric}/quarterly", (
+            int cvmCode, string metric, IMetricQuery query, CancellationToken cancellationToken) =>
+            SeriesAsync(metric, known => query.GetQuarterlyAsync(cvmCode, known, cancellationToken)));
+    }
+
+    private static async Task<IResult> SeriesAsync(string metric, Func<Metric, Task<MetricSeries?>> load)
+    {
+        if (!ByName.TryGetValue(metric, out var known))
         {
-            if (!ByName.TryGetValue(metric, out var known))
-            {
-                return Results.Problem(
-                    statusCode: StatusCodes.Status400BadRequest,
-                    title: "Unknown metric",
-                    detail: $"Known metrics: {string.Join(", ", ByName.Keys)}.");
-            }
+            return Results.Problem(
+                statusCode: StatusCodes.Status400BadRequest,
+                title: "Unknown metric",
+                detail: $"Known metrics: {string.Join(", ", ByName.Keys)}.");
+        }
 
-            var series = await query.GetAnnualAsync(cvmCode, known, cancellationToken);
+        var series = await load(known);
 
-            return series is null ? Results.NotFound() : Results.Ok(ToResponse(series));
-        });
+        return series is null ? Results.NotFound() : Results.Ok(ToResponse(series));
     }
 
     private static MetricSeriesResponse ToResponse(MetricSeries series) =>

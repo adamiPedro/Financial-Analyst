@@ -41,6 +41,49 @@ public sealed class MetricEndpointTests : IAsyncLifetime, IDisposable
             new HashSet<int> { 9512 }, CancellationToken.None);
     }
 
+    private async Task ImportPetrobrasQuarterlyAsync()
+    {
+        await ImportPetrobras2024Async();
+        await using var db = _database.CreateContext();
+        await new StatementImporter(db, NullLogger<StatementImporter>.Instance).ImportAsync(
+            _zips.Create("itr_2024", "itr_cia_aberta_2024.zip"), FilingForm.Itr, DateTimeOffset.UtcNow,
+            new HashSet<int> { 9512 }, CancellationToken.None);
+    }
+
+    [Fact]
+    public async Task Petrobras_quarterly_revenue_comes_out_with_a_calculated_q4()
+    {
+        await ImportPetrobrasQuarterlyAsync();
+
+        var series = await _factory.CreateClient()
+            .GetFromJsonAsync<MetricSeriesResponse>("/api/companies/9512/metrics/revenue/quarterly");
+
+        Assert.Equal("Consolidated", series!.Basis);
+        Assert.Equal(4, series.Points.Count);
+        var q4 = series.Points[3];
+        Assert.Equal(new DateOnly(2024, 12, 31), q4.PeriodEnd);
+        Assert.Equal(121_268_000_000m, q4.Value);
+        Assert.True(q4.IsCalculated);
+        Assert.Equal(["dfp_cia_aberta_2024.zip", "itr_cia_aberta_2024.zip"], q4.Sources.Select(s => s.SourceFile));
+        Assert.All(q4.Sources, s => Assert.Equal(1, s.FilingVersion));
+    }
+
+    [Fact]
+    public async Task An_unknown_metric_is_a_bad_request_quarterly_too()
+    {
+        var response = await _factory.CreateClient().GetAsync("/api/companies/9512/metrics/ebitda/quarterly");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task An_unknown_company_is_not_found_quarterly_too()
+    {
+        var response = await _factory.CreateClient().GetAsync("/api/companies/9512/metrics/revenue/quarterly");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
     [Fact]
     public async Task Petrobras_revenue_goes_in_from_the_cvm_file_and_comes_out_of_the_endpoint()
     {
