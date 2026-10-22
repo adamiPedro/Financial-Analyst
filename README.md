@@ -16,14 +16,16 @@ judgement about any company.
 
 ## Status
 
-M1 — in progress. CVM's company list, the downloader, the statement importer
-and the Worker are in. The Worker syncs the company list (CAD), DFP from 2010 and
-ITR from 2011 for the 14 seed companies, at startup and then once a day. Annual (DFP) and quarterly (ITR) statements are stored account by
-account with their provenance, and each filing's layout (industrial, three bank
-layouts, insurer) is detected. Six annual metrics are served at
-`GET /api/companies/{cvmCode}/metrics/{metric}/annual`, where `metric` is one of
-`revenue`, `gross-profit`, `net-income`, `operating-cash-flow`, `total-assets`
-or `equity`. See `docs/decisions/` for decisions made so far.
+M1 — done. The Worker syncs CVM's company list (CAD), DFP from 2010 and ITR
+from 2011 for the 14 seed companies, at startup and then once a day. Annual
+(DFP) and quarterly (ITR) statements are stored account by account with their
+provenance, and each filing's layout (industrial, three bank layouts, insurer)
+is detected. Six metrics are served per year and per quarter at
+`GET /api/companies/{cvmCode}/metrics/{metric}/annual` and `.../quarterly`,
+where `metric` is one of `revenue`, `gross-profit`, `net-income`,
+`operating-cash-flow`, `total-assets` or `equity`. A fourth quarter is worked
+out as the annual figure minus the nine-month year-to-date, and marked as
+calculated. See `docs/decisions/` for decisions made so far.
 
 ## Running it
 

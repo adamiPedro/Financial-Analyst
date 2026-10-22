@@ -16,8 +16,8 @@ public enum Metric
 
 /// <summary>
 /// A flow covers a period and a balance is a position on a date. The fourth
-/// quarter is derived differently for each: annual minus three quarters for a
-/// flow, the year-end figure itself for a balance.
+/// quarter is derived differently for each: annual minus the nine-month
+/// year-to-date for a flow, the year-end figure itself for a balance.
 /// </summary>
 public enum MetricKind
 {
